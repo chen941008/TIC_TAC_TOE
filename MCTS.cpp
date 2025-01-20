@@ -8,9 +8,11 @@
 #include <random>
 #include <set>
 #include <vector>
+int K = 0;                // 調整分數的比例係數
 random_device rd;         // 取得硬體隨機數
 mt19937 generator(rd());  // 初始化隨機數生成器
-double UCBCalculation(int ParentVisits, int NodeVisits, int NodeWins) {
+double UCBCalculation(int ParentVisits, int NodeVisits,
+                      long long int NodeWins) {
     if (NodeVisits == 0) {
         return static_cast<double>(INT_MAX);
     }
@@ -42,15 +44,15 @@ void MCTS(Node* root, int iterations) {
     for (int i = 0; i < iterations; i++) {
         Node* SelectedNode = Selection(root);  // 選擇best leaf node
         if (root->isTerminal) {
-            cout << "root is terminal" << endl;
+            // cout << "root is terminal" << endl;
             break;
         }
         if (SelectedNode->Visits != 0) {
             SelectedNode = Expansion(SelectedNode);
         }
         int playoutResult =
-            Playout(SelectedNode);  // 模擬遊戲 1 = selected node win, 0 = draw,
-                                    // -1 = selected node lose
+            Playout(SelectedNode);  // 模擬遊戲  >0  selected node win, 0 =
+                                    // draw, <0 selected node lose
         Backpropagation(SelectedNode, SelectedNode->isXTurn,
                         playoutResult);  // 傳遞結果並更新節點資訊
     }
@@ -101,13 +103,13 @@ void Backpropagation(
         node->Visits++;
         // 如果與 leaf node 的 turn 相符且贏，或者與 leaf node
         // 相反且對方輸，則增加勝利次數
-        if ((node->isXTurn == isXTurn && win == 1) ||
-            (node->isXTurn != isXTurn && win == -1)) {
+        if ((node->isXTurn == isXTurn && win > 0) ||
+            (node->isXTurn != isXTurn && win < 0)) {
             node->Wins += 1;
         } else if (win == 0) {  // 平手 for test
-            node->Wins += 0.9;
+            node->Wins += 0.5;
         } else {
-            node->Wins += -1;
+            node->Wins += 0;
         }
         node = node->Parent;
     }
@@ -156,6 +158,11 @@ bool CheckWin(vector<vector<int>>& board, bool PlayTurn) {
     }
     return false;
 }
+int calculateReward(
+    int result,
+    int currentRound) {  // 調整輸贏分數，越早獲勝分數越高，越早輸分數越低
+    return K * (currentRound + 10) * result;
+}
 int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
                            // 1 win, 0 draw, -1 lose
     vector<vector<int>> board(3, vector<int>(3, 0));  // 0: empty, 1: X, -1: O
@@ -166,12 +173,7 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
         board[TempNode->Move.X][TempNode->Move.Y] = TempNode->isXTurn ? 1 : -1;
         TempNode = TempNode->Parent;
     }
-    if (CheckWin(
-            board,
-            StartTurn)) {  // 如果節點的走步已經獲勝，也就是該路徑已有結果，設定isTerminal為true
-        node->isTerminal = true;
-        return 1;
-    }
+
     // 建立可能的走步
     vector<Position> possibleMoves;
     for (int i = 0; i < 3; i++) {
@@ -180,6 +182,12 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
                 possibleMoves.push_back({i, j});
             }
         }
+    }
+    if (CheckWin(
+            board,
+            StartTurn)) {  // 如果節點的走步已經獲勝，也就是該路徑已有結果，設定isTerminal為true
+        node->isTerminal = true;
+        return calculateReward(1, possibleMoves.size() + 50);
     }
     if (possibleMoves
             .empty()) {  // 該node為最終節點，棋盤已滿，平手，並設置為isTerminal=true
@@ -202,9 +210,9 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
                 CurrentTurn)) {  // 空格在四個以下才有可能獲勝，只需檢查下棋那方是否獲勝
             if (CurrentTurn ==
                 StartTurn) {  // 勝利方為開始下棋的那方=node方獲勝
-                return 1;
+                return calculateReward(1, possibleMoves.size());
             } else {  // 勝利方為非開始下棋的那方=node方輸
-                return -1;
+                return calculateReward(-1, possibleMoves.size());
             }
         }
     }
@@ -287,15 +295,17 @@ void Game(Node* root, int GameTimes) {
                 if (CurrentNode->Children.empty()) {
                     RandomGame(board, PlayerOrder == 1);
                 } else {
-                    Node* bestChild = nullptr;     // 紀錄最佳子節點
-                    double bestValue = -100000.0;  // 紀錄最佳 UCB 值
+                    Node* bestChild = nullptr;  // 紀錄最佳子節點
+                    double bestWinRate =
+                        -std::numeric_limits<double>::infinity();  // 紀錄最佳
+                                                                   // win rate
                     for (auto child :
                          CurrentNode->Children) {  // 遍歷所有子節點
-                        double ucbValue = UCBCalculation(
-                            CurrentNode->Visits, child->Visits, child->Wins);
+                        double winRate = static_cast<double>(child->Wins) /
+                                         static_cast<double>(child->Visits);
                         // 更新最佳節點
-                        if (ucbValue > bestValue) {
-                            bestValue = ucbValue;
+                        if (winRate > bestWinRate) {
+                            bestWinRate = winRate;
                             bestChild = child;
                         }
                     }
@@ -316,18 +326,118 @@ void Game(Node* root, int GameTimes) {
         cout << "Game " << i + 1 << " finish" << endl;
     }
 }
+int showWinRate(Node* root, Position currectMove) {
+    vector<vector<int>> board(3, vector<int>(3, 0));
+    Node* TempNode = root;
+    while (TempNode->Parent != nullptr) {
+        board[TempNode->Move.X][TempNode->Move.Y] = TempNode->isXTurn ? 1 : -1;
+        TempNode = TempNode->Parent;
+    }
+    printBoard(board);
+    Node* bestChild = nullptr;
+    double bestScore = -std::numeric_limits<double>::infinity();
 
+    for (auto child : root->Children) {
+        // 計算綜合分數：考慮勝率、訪問次數和路徑長度
+        double winRate = static_cast<double>(child->Wins) /
+                         static_cast<double>(child->Visits);
+        double visitRatio = static_cast<double>(child->Visits) /
+                            static_cast<double>(root->Visits);
+        double score = winRate + 0.1 * visitRatio;  // 可調整權重
+
+        if (score > bestScore) {
+            bestScore = score;
+            bestChild = child;
+        }
+    }
+
+    cout << "Best Move " << bestChild->Move.X << " " << bestChild->Move.Y
+         << " bestScore: " << bestScore << endl;
+
+    if (bestChild->Move.X == currectMove.X &&
+        bestChild->Move.Y == currectMove.Y) {
+        return 1;
+    }
+    return 0;
+}
 int main() {
+    /*
     int RunTimes;
     cout << "input MCTS simulation times" << endl;
     cin >> RunTimes;
-
     Node* root = new Node();
     MCTS(root, RunTimes);
+    */
+    for (int i = 1; i < 10; i++) {
+        Node* root = new Node();
+        MCTS(root, 1000000);
+        int currectAns = 0;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[0]
+                                      ->Children[1]
+                                      ->Children[3]
+                                      ->Children[1],
+                                  {1, 2});
+        cout << "currect move is 1 2" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[0]
+                                      ->Children[4]
+                                      ->Children[1]
+                                      ->Children[0],
+                                  {2, 1});
+        cout << "currect move is 2 1" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[2]
+                                      ->Children[0]
+                                      ->Children[5]
+                                      ->Children[2],
+                                  {1, 0});
+        cout << "currect move is 1 0" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[2]
+                                      ->Children[6]
+                                      ->Children[0]
+                                      ->Children[0],
+                                  {2, 1});
+        cout << "currect move is 2 1" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[5]
+                                      ->Children[0]
+                                      ->Children[5]
+                                      ->Children[4],
+                                  {0, 1});
+        cout << "currect move is 0 1" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[5]
+                                      ->Children[6]
+                                      ->Children[0]
+                                      ->Children[2],
+                                  {1, 2});
+        cout << "currect move is 1 2" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[7]
+                                      ->Children[2]
+                                      ->Children[4]
+                                      ->Children[4],
+                                  {0, 1});
+        cout << "currect move is 0 1" << endl;
+        currectAns += showWinRate(root->Children[4]
+                                      ->Children[7]
+                                      ->Children[5]
+                                      ->Children[2]
+                                      ->Children[3],
+                                  {1, 0});
+        cout << "currect move is 1 0" << endl;
+        cout << "currect rate is " << static_cast<double>(currectAns) / 8.0
+             << endl;
+        delete root;
+    }
+    /*
     cout << "input how many games you want to play" << endl;
     int GameTimes;
     cin >> GameTimes;
     Game(root, GameTimes);
     cout << "finish" << endl;
+    */
     return 0;
 }

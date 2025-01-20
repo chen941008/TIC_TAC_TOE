@@ -11,8 +11,7 @@ struct Position {
 };
 
 struct Node {
-    int Visits;
-    long long int Wins;
+    int Wins, Visits;
     Node* Parent;
     vector<Node*> Children;
     Position Move;
@@ -37,14 +36,15 @@ struct Node {
           isTerminal(false),
           isXTurn(!parent->isXTurn) {}
     ~Node() {
-        // 確保刪除所有子節點
         for (Node* child : Children) {
             delete child;
         }
+        Children.clear();
+        Parent = nullptr;  // 清除指向父節點的指標
     }
 };
 
-double UCBCalculation(int ParentVisits, int NodeVisits, long long int NodeWins);
+double UCBCalculation(int ParentVisits, int NodeVisits, int NodeWins);
 void MCTS(Node* root, int iterations);
 void printBoard(vector<vector<int>>& board);
 Node* Selection(Node* node);
@@ -52,4 +52,4 @@ void Backpropagation(Node* node, bool isXTurn, int win);
 Node* Expansion(Node* node);
 int Playout(Node* node);
 bool CheckWin(vector<vector<int>>& board, bool PlayTurn);
-void Game(Node* root, int GameTimes);
+void Game();
