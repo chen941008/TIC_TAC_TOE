@@ -12,3 +12,5 @@ output/
 # 忽略 MCTS 可執行檔
 MCTS
 MCTS_PLUS
+
+.gitignore
