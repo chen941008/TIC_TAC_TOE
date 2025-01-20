@@ -1,0 +1,23 @@
+{
+    // 文件類型關聯：確保特定文件使用 C++ 語法
+    "files.associations": {
+        "vector": "cpp",
+        "*.tpp": "cpp",
+        "*.h": "cpp",
+        "ostream": "cpp"
+    },
+    // 設置 clang-format 為默認格式化工具
+    "[cpp]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+    "[c]": {
+        "editor.defaultFormatter": "xaver.clang-format"
+    },
+
+    // 編輯器格式化相關設置
+    "editor.formatOnSave": true,  // 儲存文件時自動格式化
+    "editor.formatOnPaste": true, // 貼上代碼時自動格式化
+    "editor.tabSize": 4,          // 設置 tab 的空格數（clang-format 會覆蓋）
+    // 可選：啟用格式化時的樣式（基於 clang-format 的配置）
+    "clang-format.style": "file" // 使用 .clang-format 文件中的格式化規則
+}

@@ -319,6 +319,7 @@ void Game() {
         }
         CurrentOrder++;
     }
+    delete root;
 }
 int main() {
     int GameTimes;
