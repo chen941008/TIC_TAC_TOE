@@ -5,7 +5,6 @@
 #include <climits>
 #include <cmath>
 #include <iostream>
-#include <queue>
 #include <random>
 #include <set>
 #include <vector>
@@ -315,7 +314,7 @@ void Game() {
         } else {  // AI turn
             cout << "AI turn" << endl;
             if (AIMode == 2) {
-                cout << "Input how many simulations you want to run (must be "
+                cout << "Input how many iteration you want to run (must be "
                         "greater than 10)."
                      << endl;
                 do {
