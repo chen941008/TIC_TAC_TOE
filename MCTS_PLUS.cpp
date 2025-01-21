@@ -1,6 +1,7 @@
 #include "MCTS_PLUS.hpp"
 
 #include <algorithm>
+#include <chrono>
 #include <climits>
 #include <cmath>
 #include <iostream>
@@ -8,6 +9,8 @@
 #include <random>
 #include <set>
 #include <vector>
+double total_time = 0.0;
+int playCount = 0;        // 計算執行的次數
 random_device rd;         // 取得硬體隨機數
 mt19937 generator(rd());  // 初始化隨機數生成器
 double UCBCalculation(int ParentVisits, int NodeVisits, int NodeWins) {
@@ -39,7 +42,12 @@ void printBoard(vector<vector<int>>& board) {
 }
 
 void MCTS(Node* root, int iterations) {
+    auto start = std::chrono::high_resolution_clock::now();
+    // 記錄開始時間
     for (int i = 0; i < iterations; i++) {
+        if (root->isTerminal) {
+            break;
+        }
         Node* SelectedNode = Selection(root);  // 選擇best leaf node
         if (SelectedNode->Visits != 0) {
             SelectedNode = Expansion(SelectedNode);
@@ -50,6 +58,12 @@ void MCTS(Node* root, int iterations) {
         Backpropagation(SelectedNode, SelectedNode->isXTurn,
                         playoutResult);  // 傳遞結果並更新節點資訊
     }
+    auto end = std::chrono::high_resolution_clock::now();  // 記錄結束時間
+    auto duration =
+        std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+    std::cout << "MCTS completed in " << duration.count() << " milliseconds."
+              << std::endl;
 }
 
 Node* Selection(Node* node) {              // select the best leaf node
@@ -99,11 +113,11 @@ void Backpropagation(
         // 相反且對方輸，則增加勝利次數
         if ((node->isXTurn == isXTurn && win == 1) ||
             (node->isXTurn != isXTurn && win == -1)) {
-            node->Wins += 5;
+            node->Wins += 2;
         } else if (win == 0) {  // 平手 for test
-            node->Wins += 3;
+            node->Wins += 1;
         } else {
-            node->Wins += -10;
+            node->Wins += 0;
         }
         node = node->Parent;
     }
@@ -152,8 +166,11 @@ bool CheckWin(vector<vector<int>>& board, bool PlayTurn) {
     }
     return false;
 }
-int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
-                           // 1 win, 0 draw, -1 lose
+int Playout(Node* node) {
+    playCount++;
+    auto start = chrono::high_resolution_clock::
+        now();  // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
+                // 1 win, 0 draw, -1 lose
     vector<vector<int>> board(3, vector<int>(3, 0));  // 0: empty, 1: X, -1: O
     Node* TempNode = node;
     bool StartTurn = node->isXTurn, CurrentTurn = node->isXTurn;
@@ -166,6 +183,9 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
             board,
             StartTurn)) {  // 如果節點的走步已經獲勝，也就是該路徑已有結果，設定isTerminal為true
         node->isTerminal = true;
+        auto end = chrono::high_resolution_clock::now();
+        chrono::duration<double> duration = end - start;
+        total_time += duration.count();
         return 1;
     }
     // 建立可能的走步
@@ -180,6 +200,9 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
     if (possibleMoves
             .empty()) {  // 該node為最終節點，棋盤已滿，平手，並設置為isTerminal=true
         node->isTerminal = true;
+        auto end = chrono::high_resolution_clock::now();
+        chrono::duration<double> duration = end - start;
+        total_time += duration.count();
         return 0;
     }
     // 將節點的走步依序放入棋盤(後續作業)
@@ -198,13 +221,22 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
                 CurrentTurn)) {  // 空格在四個以下才有可能獲勝，只需檢查下棋那方是否獲勝
             if (CurrentTurn ==
                 StartTurn) {  // 勝利方為開始下棋的那方=node方獲勝
+                auto end = chrono::high_resolution_clock::now();
+                chrono::duration<double> duration = end - start;
+                total_time += duration.count();
                 return 1;
             } else {  // 勝利方為非開始下棋的那方=node方輸
+                auto end = chrono::high_resolution_clock::now();
+                chrono::duration<double> duration = end - start;
+                total_time += duration.count();
                 return -1;
             }
         }
     }
     // 平手
+    auto end = chrono::high_resolution_clock::now();
+    chrono::duration<double> duration = end - start;
+    total_time += duration.count();
     return 0;
 }
 void Game() {
@@ -215,7 +247,7 @@ void Game() {
     while (true) {
         cin >> AIMode;
         if (AIMode == 1) {
-            cout << "Input how many simulations you want to run (must be "
+            cout << "Input how many iteration you want to run (must be "
                     "greater than 10)."
                  << endl;
             cin >> simulationTimes;
@@ -227,6 +259,12 @@ void Game() {
         cout << "Please input 1 or 2" << endl;
     }
     Node* root = new Node();
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            Node* newNode = new Node({i, j}, root);
+            root->Children.push_back(newNode);
+        }
+    }
     Node* CurrentNode =
         root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
     vector<vector<int>> board(3, vector<int>(3, 0));
@@ -268,15 +306,10 @@ void Game() {
                 printBoard(board);
                 break;
             }
-
-            if (!CurrentNode->Children
-                     .empty()) {  // 如果有子節點，選擇玩家所下的節點，否則直接跳過=無法選擇
-                for (auto child :
-                     CurrentNode->Children) {  // 選擇玩家所下的節點
-                    if (child->Move.X == X && child->Move.Y == Y) {
-                        CurrentNode = child;
-                        break;
-                    }
+            for (auto child : CurrentNode->Children) {
+                if (child->Move.X == X && child->Move.Y == Y) {
+                    CurrentNode = child;
+                    break;
                 }
             }
         } else {  // AI turn
@@ -294,15 +327,20 @@ void Game() {
                 } while (simulationTimes <= 10);
             }
             MCTS(CurrentNode, simulationTimes);
-            Node* bestChild = nullptr;  // 紀錄最佳子節點
-            double bestWinRate =
-                -std::numeric_limits<double>::infinity();  // 紀錄最佳 win rate
-            for (auto child : CurrentNode->Children) {     // 遍歷所有子節點
+            Node* bestChild = nullptr;
+            double bestScore = -std::numeric_limits<double>::infinity();
+
+            for (auto child : CurrentNode->Children) {
+                // 計算綜合分數：考慮勝率、訪問次數和路徑長度
                 double winRate = static_cast<double>(child->Wins) /
                                  static_cast<double>(child->Visits);
-                // 更新最佳節點
-                if (winRate > bestWinRate) {
-                    bestWinRate = winRate;
+                double visitRatio = static_cast<double>(child->Visits) /
+                                    static_cast<double>(CurrentNode->Visits);
+                double score =
+                    0.25 * winRate + 0.75 * visitRatio;  // 可調整權重
+
+                if (score > bestScore) {
+                    bestScore = score;
                     bestChild = child;
                 }
             }
@@ -328,5 +366,7 @@ int main() {
     for (int i = 0; i < GameTimes; i++) {
         Game();
     }
+    cout << "Average time for each simulation: " << total_time / playCount
+         << " seconds" << endl;
     return 0;
 }
