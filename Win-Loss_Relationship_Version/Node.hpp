@@ -31,7 +31,7 @@ struct Position {
  * @brief 表示遊戲的節點，用於蒙地卡羅樹搜索
  */
 struct Node {
-    int Wins;                ///< 該節點的獲勝次數
+    double Wins;             ///< 該節點的獲勝次數
     int Visits;              ///< 該節點的訪問次數
     Node* Parent;            ///< 指向父節點的指標
     vector<Node*> Children;  ///< 儲存所有子節點
