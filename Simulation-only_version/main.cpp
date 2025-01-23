@@ -16,10 +16,10 @@ int main() {
         Game();
     }
     */
-    int GameTimes = 1, total_time = 0;
+    int GameTimes = 30, total_time = 0;
 
     // 創建一個 CSV 檔案來保存結果
-    ofstream outputFile("simulation_results.csv");
+    ofstream outputFile("simulation_results_change_all_vector_to_array.csv");
     if (!outputFile.is_open()) {
         cerr << "Error: Unable to open output file!" << endl;
         return 1;
@@ -29,7 +29,7 @@ int main() {
     outputFile << "SimulationTimes,AverageTime (ms)" << endl;
 
     // 模擬不同次數的情況
-    for (simulationTimes = 1; simulationTimes <= 1; simulationTimes++) {
+    for (simulationTimes = 1; simulationTimes <= 50; simulationTimes++) {
         total_time = 0;
         for (int i = 0; i < GameTimes; i++) {
             Node* root = new Node();  // 創建根節點

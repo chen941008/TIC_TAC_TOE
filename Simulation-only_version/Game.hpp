@@ -18,13 +18,13 @@ void Game();
  * @return true 如果當前玩家獲勝
  * @return false 如果當前玩家未獲勝
  */
-bool CheckWin(vector<vector<int>>& board, bool PlayTurn);
+bool CheckWin(int board[3][3], bool PlayTurn);
 
 /**
  * @brief 輸出棋盤的當前狀態
  *
  * @param board 棋盤的二維向量表示
  */
-void printBoard(vector<vector<int>>& board);
+void printBoard(int board[3][3]);
 
 #endif  // GAME_HPP

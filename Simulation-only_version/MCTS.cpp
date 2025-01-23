@@ -113,31 +113,34 @@ void Backpropagation(
 }
 
 Node* Expansion(Node* node) {
-    set<Position> usedMoves;  // 紀錄已經使用過的走步
+    bool usedMoves[3][3] = {false};  // 初始化棋盤的使用情況
     Node* TempNode = node;
     while (TempNode->Parent != nullptr) {
-        usedMoves.insert(TempNode->Move);
+        usedMoves[TempNode->Move.X][TempNode->Move.Y] = true;
         TempNode = TempNode->Parent;
     }
-    if (usedMoves.size() ==
-        9) {  // 最後一個節點不進行任何操作，isTerminal=True等到Playout再做操作
-        return node;
+
+    if (std::all_of(&usedMoves[0][0], &usedMoves[0][0] + 9,
+                    [](bool v) { return v; })) {
+        return node;  // 棋盤滿了
     }
+
     int index = 0;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (usedMoves.find({i, j}) == usedMoves.end()) {
+            if (!usedMoves[i][j]) {  // 若該位置未被使用
                 Node* newNode = new Node({i, j}, node);
                 node->Children[index++] = newNode;
             }
         }
     }
+
     return node->Children[0];
 }
 
 int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
                            // 1 win, 0 draw, -1 lose
-    vector<vector<int>> board(3, vector<int>(3, 0));  // 0: empty, 1: X, -1: O
+    int board[3][3] = {};  // 0: empty, 1: X, -1: O
     Node* TempNode = node;
     bool StartTurn = node->isXTurn, CurrentTurn = node->isXTurn;
     // 將節點的走步依序放入棋盤(前置作業)
@@ -152,30 +155,37 @@ int Playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
         return 1;
     }
     // 建立可能的走步
-    vector<Position> possibleMoves;
+    Position possibleMoves[9];  // 最大可能的走法數量為 9（3x3 棋盤）
+    int moveCount = 0;          // 用來追蹤有效的走法數量
+
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (board[i][j] == 0) {
-                possibleMoves.push_back({i, j});
+                possibleMoves[moveCount++] = {i, j};  // 儲存有效的走法
             }
         }
     }
-    if (possibleMoves
-            .empty()) {  // 該node為最終節點，棋盤已滿，平手，並設置為isTerminal=true
+    if (moveCount ==
+        0) {  // 該node為最終節點，棋盤已滿，平手，並設置為isTerminal=true
         node->isTerminal = true;
         return 0;
     }
     // 將節點的走步依序放入棋盤(後續作業)
-    while (!possibleMoves.empty()) {
+    while (moveCount > 0) {
         // 隨機選擇一個走步
         CurrentTurn = !CurrentTurn;  // 換手
-        uniform_int_distribution<int> distribution(0, possibleMoves.size() - 1);
+        uniform_int_distribution<int> distribution(0, moveCount - 1);
         int moveIndex = distribution(generator);
         Position move = possibleMoves[moveIndex];
-        possibleMoves.erase(possibleMoves.begin() + moveIndex);
+
+        // 將選中的走步移到陣列最後，並減少 moveCount
+        possibleMoves[moveIndex] = possibleMoves[moveCount - 1];
+        moveCount--;  // 移除最後一個走步
+
         board[move.X][move.Y] = CurrentTurn ? 1 : -1;  // 將走步放入棋盤
+
         // 檢查是否有玩家獲勝
-        if (possibleMoves.size() <= 4 &&
+        if (moveCount <= 4 &&
             CheckWin(
                 board,
                 CurrentTurn)) {  // 空格在四個以下才有可能獲勝，只需檢查下棋那方是否獲勝
