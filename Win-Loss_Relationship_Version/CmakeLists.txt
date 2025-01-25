@@ -1,0 +1,10 @@
+cmake_minimum_required(VERSION 3.5)
+project(Win-Loss_Relationship_Version)
+
+set(CMAKE_CXX_STANDARD 23)
+
+file(GLOB SOURCES "*.cpp")
+
+add_executable(Win-Loss_Relationship_Version ${SOURCES})
+
+include_directories(${PROJECT_SOURCE_DIR})
