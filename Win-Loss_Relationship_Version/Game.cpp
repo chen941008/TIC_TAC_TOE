@@ -26,15 +26,16 @@ void Game() {
         cout << "Please input 1 or 2" << endl;
     }
     Node* root = new Node();
+    int index = 0;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             Node* newNode = new Node({i, j}, root);
-            root->Children.push_back(newNode);
+            root->Children[index++] = newNode;
         }
     }
     Node* CurrentNode =
         root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
-    vector<vector<int>> board(3, vector<int>(3, 0));
+    int board[3][3] = {};
     cout << "Choose first or second player, input 1 or 2" << endl;
     while (true) {  // 選擇先手或後手，防白痴crash程式
         cin >> PlayerOrder;
@@ -74,11 +75,13 @@ void Game() {
                 break;
             }
             for (auto child : CurrentNode->Children) {
-                if (child->Move.X == X && child->Move.Y == Y) {
+                if (child != nullptr && child->Move.X == X &&
+                    child->Move.Y == Y) {
                     CurrentNode = child;
                     break;
                 }
             }
+
         } else {  // AI turn
             cout << "AI turn" << endl;
             if (AIMode == 2) {
@@ -93,24 +96,28 @@ void Game() {
                     }
                 } while (simulationTimes <= 10);
             }
-            MCTS(CurrentNode, simulationTimes);
+            int temp = MCTS(CurrentNode, simulationTimes);
             Node* bestChild = nullptr;
             double bestScore = -std::numeric_limits<double>::infinity();
 
             for (auto child : CurrentNode->Children) {
-                // 計算綜合分數：考慮勝率、訪問次數和路徑長度
-                double winRate = static_cast<double>(child->Wins) /
-                                 static_cast<double>(child->Visits);
-                double visitRatio = static_cast<double>(child->Visits) /
-                                    static_cast<double>(CurrentNode->Visits);
-                double score =
-                    0.25 * winRate + 0.75 * visitRatio;  // 可調整權重
+                if (child != nullptr) {  // 確保 child 不是空指標
+                    // 計算綜合分數：考慮勝率、訪問次數和路徑長度
+                    double winRate = static_cast<double>(child->Wins) /
+                                     static_cast<double>(child->Visits);
+                    double visitRatio =
+                        static_cast<double>(child->Visits) /
+                        static_cast<double>(CurrentNode->Visits);
+                    double score =
+                        0.25 * winRate + 0.75 * visitRatio;  // 可調整權重
 
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestChild = child;
+                    if (score > bestScore) {
+                        bestScore = score;
+                        bestChild = child;
+                    }
                 }
             }
+
             cout << "AI choose " << bestChild->Move.X << " "
                  << bestChild->Move.Y << endl;
             board[bestChild->Move.X][bestChild->Move.Y] =
@@ -124,10 +131,10 @@ void Game() {
         }
         CurrentOrder++;
     }
-    delete root;
+    deleteTree(root);
 }
 
-bool CheckWin(vector<vector<int>>& board, bool PlayTurn) {
+bool CheckWin(int board[3][3], bool PlayTurn) {
     int player = PlayTurn ? 1 : -1;
     for (int i = 0; i < 3; i++) {
         if (board[i][0] == player && board[i][1] == player &&
@@ -150,7 +157,7 @@ bool CheckWin(vector<vector<int>>& board, bool PlayTurn) {
     return false;
 }
 
-void printBoard(vector<vector<int>>& board) {
+void printBoard(int board[3][3]) {
     cout << endl;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {

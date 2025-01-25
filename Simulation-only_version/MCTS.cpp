@@ -60,9 +60,10 @@ Node* Selection(Node* node) {  // select the best leaf node
         } else {          // 如果當前節點有子節點
             Node* bestChild = nullptr;     // 紀錄最佳子節點
             double bestValue = -100000.0;  // 紀錄最佳 UCB 值
-            for (int i = 0; i < 9 && node->Children[i] != nullptr; i++) {
+            for (int i = 0; i < 9; i++) {
                 Node* child = node->Children[i];
-                if (!child->isTerminal) {
+                if (child != nullptr &&
+                    !child->isTerminal) {  // 確保 child 不是空指標
                     double ucbValue = UCBCalculation(
                         node->Visits, child->Visits, child->Wins);
                     // 更新最佳節點
@@ -72,6 +73,7 @@ Node* Selection(Node* node) {  // select the best leaf node
                     }
                 }
             }
+
             // 如果至少一個子節點不是terminal，向下移動到該節點，繼續進行while
             // loop
             if (bestChild) {
@@ -129,7 +131,7 @@ Node* Expansion(Node* node) {
     int index = 0;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (!usedMoves[i][j]) {  // 若該位置未被使用
+            if (!usedMoves[i][j] && index < MAX_CHILDREN) {  // 若該位置未被使用
                 Node* newNode = new Node({i, j}, node);
                 node->Children[index++] = newNode;
             }

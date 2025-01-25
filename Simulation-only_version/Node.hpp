@@ -70,21 +70,17 @@ struct Node {
         std::fill(std::begin(Children), std::end(Children),
                   nullptr);  // 初始化所有子節點為空指標
     }
-
-    /**
-     * @brief 析構函數，釋放子節點記憶體
-     */
-    ~Node() {
-        // 刪除每個子節點
-        for (Node* child : Children) {
-            if (child != nullptr) {
-                delete child;  // 確保只有非空指標被刪除
-            }
-        }
-        // 清除陣列中的指標
-        std::fill(std::begin(Children), std::end(Children), nullptr);
-        Parent = nullptr;  // 清除指向父節點的指標
-    }
 };
+inline void deleteTree(Node* node) {
+    if (node == nullptr) return;
 
+    for (int i = 0; i < MAX_CHILDREN; i++) {
+        if (node->Children[i] != nullptr) {
+            deleteTree(node->Children[i]);
+            node->Children[i] = nullptr;  // 防止重複刪除
+        }
+    }
+
+    delete node;
+}
 #endif  // NODE_HPP

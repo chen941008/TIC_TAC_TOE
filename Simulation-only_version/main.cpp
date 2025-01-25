@@ -34,7 +34,7 @@ int main() {
         for (int i = 0; i < GameTimes; i++) {
             Node* root = new Node();  // 創建根節點
             total_time += MCTS(root, 1000000);
-            delete root;
+            deleteTree(root);  // 刪除樹
         }
 
         // 計算平均時間
