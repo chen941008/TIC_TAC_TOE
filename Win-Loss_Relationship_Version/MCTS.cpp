@@ -6,14 +6,14 @@
 #include <limits>
 #include <random>
 #include <set>
-
+#include <climits>
 #include "Game.hpp"
 #include "Node.hpp"
 
 using namespace std;
 random_device rd;         // 取得硬體隨機數
 mt19937 generator(rd());  // 初始化隨機數生成器
-double UCBCalculation(int ParentVisits, int NodeVisits, int NodeWins) {
+double UCBCalculation(int ParentVisits, int NodeVisits,long long int NodeWins) {
     if (NodeVisits == 0) {
         return static_cast<double>(INT_MAX);
     }

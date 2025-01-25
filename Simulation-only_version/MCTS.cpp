@@ -6,6 +6,7 @@
 #include <limits>
 #include <random>
 #include <set>
+#include <climits>
 
 #include "Game.hpp"
 #include "Node.hpp"
