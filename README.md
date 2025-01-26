@@ -47,11 +47,10 @@ Input how many iteration you want to run (must be greater than 10).
 Choose first or second player, input 1 or 2
 1
 
-   |   |   
------------
-   |   |   
------------
-   |   |   
+|---|---|---|
+|   |   |   |
+|   |   |   |
+|   |   |   |
 
 Your turn
 input X Y 0~2
@@ -113,12 +112,10 @@ AI choose 0 1
 Your turn
 input X Y 0~2
 2 1
-
- X | O | X 
------------
-   | O | X 
------------
-   | X | O 
+|---|---|---|
+| X | O | X |
+|   | O | X |
+|   | X | O |
 
 AI turn
 AI choose 1 0
