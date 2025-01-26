@@ -44,7 +44,8 @@ Choose AI simulation mode: 1 = fixed simulation times, 2 = variable simulation t
 1
 Input how many iteration you want to run (must be greater than 10).
 600000
-Choose first or second player, input 1 or 2
+Choose first or second player, input 1 or 2 
+
 1
 
 |   |   |   |
@@ -53,7 +54,8 @@ Choose first or second player, input 1 or 2
 |   |   |   |
 
 Your turn
-input X Y 0~2
+input X Y 0~2  
+
 0 2
 
 |   |   | X |
@@ -61,68 +63,82 @@ input X Y 0~2
 |   |   |   |
 |   |   |   |
 
-AI turn
-AI choose 1 1
+AI turn  
+
+AI choose 1 1  
 
 |   |   | X |
 |---|---|---|
 |   | O |   |
 |   |   |   |
 
-Your turn
-input X Y 0~2
-1 2
+Your turn  
+
+input X Y 0~2  
+
+1 2  
 
 |   |   | X |
 |---|---|---|
 |   | O | X |
 |   |   |   |
 
+AI turn  
 
-AI turn
-AI choose 2 2
+AI choose 2 2  
 
 |   |   | X |
 |---|---|---|
 |   | O | X |
 |   |   | O |
 
-Your turn
-input X Y 0~2
-0 0
+Your turn  
+
+input X Y 0~2  
+
+0 0  
 
 | X |   | X |
 |---|---|---|
 |   | O | X |
 |   |   | O |
 
-AI turn
-AI choose 0 1
+AI turn  
+
+AI choose 0 1  
 
 | X | O | X |
 |---|---|---|
 |   | O | X |
-|   |   | O |
-Your turn
-input X Y 0~2
-2 1
+|   |   | O |  
+
+Your turn  
+
+input X Y 0~2  
+
+2 1  
+
 | X | O | X |
 |---|---|---|
 |   | O | X |
 |   | X | O |
 
-AI turn
-AI choose 1 0
+AI turn  
+
+AI choose 1 0  
 
 | X | O | X |
 |---|---|---|
 | O | O | X |
 |   | X | O |
 
-Your turn
-input X Y 0~2
-2 0
-Draw
+Your turn  
+
+input X Y 0~2  
+
+2 0  
+
+Draw  
 
 | X | O | X |
 |---|---|---|
@@ -188,7 +204,8 @@ Choose AI simulation mode: 1 = fixed simulation times, 2 = variable simulation t
 1
 Input how many iteration you want to run (must be greater than 10).
 600000
-Choose first or second player, input 1 or 2
+Choose first or second player, input 1 or 2  
+
 1
 
 |   |   |   |
@@ -197,7 +214,8 @@ Choose first or second player, input 1 or 2
 |   |   |   |
 
 Your turn
-input X Y 0~2
+input X Y 0~2  
+
 0 2
 
 |   |   | X |
@@ -205,73 +223,88 @@ input X Y 0~2
 |   |   |   |
 |   |   |   |
 
-AI turn
-AI choose 1 1
+AI turn  
+
+AI choose 1 1  
 
 |   |   | X |
 |---|---|---|
 |   | O |   |
 |   |   |   |
 
-Your turn
-input X Y 0~2
-1 2
+Your turn  
+
+input X Y 0~2  
+
+1 2  
 
 |   |   | X |
 |---|---|---|
 |   | O | X |
 |   |   |   |
 
+AI turn  
 
-AI turn
-AI choose 2 2
+AI choose 2 2  
 
 |   |   | X |
 |---|---|---|
 |   | O | X |
 |   |   | O |
 
-Your turn
-input X Y 0~2
-0 0
+Your turn  
+
+input X Y 0~2  
+
+0 0  
 
 | X |   | X |
 |---|---|---|
 |   | O | X |
 |   |   | O |
 
-AI turn
-AI choose 0 1
+AI turn  
+
+AI choose 0 1  
 
 | X | O | X |
 |---|---|---|
 |   | O | X |
-|   |   | O |
-Your turn
-input X Y 0~2
-2 1
+|   |   | O |  
+
+Your turn  
+
+input X Y 0~2  
+
+2 1  
+
 | X | O | X |
 |---|---|---|
 |   | O | X |
 |   | X | O |
 
-AI turn
-AI choose 1 0
+AI turn  
+
+AI choose 1 0  
 
 | X | O | X |
 |---|---|---|
 | O | O | X |
 |   | X | O |
 
-Your turn
-input X Y 0~2
-2 0
-Draw
+Your turn  
+
+input X Y 0~2  
+
+2 0  
+
+Draw  
 
 | X | O | X |
 |---|---|---|
 | O | O | X |
 | X | X | O |
+
 
 ## Contributing
 If you would like to contribute to this project, please follow these steps:
