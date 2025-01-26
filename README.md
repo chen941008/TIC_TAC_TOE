@@ -56,86 +56,78 @@ Your turn
 input X Y 0~2
 0 2
 
-   |   | X 
------------
-   |   |   
------------
-   |   |   
+|   |   | X |
+|---|---|---|
+|   |   |   |
+|   |   |   |
 
 AI turn
 AI choose 1 1
 
-   |   | X 
------------
-   | O |   
------------
-   |   |   
+|   |   | X |
+|---|---|---|
+|   | O |   |
+|   |   |   |
 
 Your turn
 input X Y 0~2
 1 2
 
-   |   | X 
------------
-   | O | X 
------------
-   |   |   
+|   |   | X |
+|---|---|---|
+|   | O | X |
+|   |   |   |
+
 
 AI turn
 AI choose 2 2
 
-   |   | X 
------------
-   | O | X 
------------
-   |   | O 
+|   |   | X |
+|---|---|---|
+|   | O | X |
+|   |   | O |
 
 Your turn
 input X Y 0~2
 0 0
 
- X |   | X 
------------
-   | O | X 
------------
-   |   | O 
+| X |   | X |
+|---|---|---|
+|   | O | X |
+|   |   | O |
 
 AI turn
 AI choose 0 1
 
- X | O | X 
------------
-   | O | X 
------------
-   |   | O 
-
+| X | O | X |
+|---|---|---|
+|   | O | X |
+|   |   | O |
 Your turn
 input X Y 0~2
 2 1
-|---|---|---|
 | X | O | X |
+|---|---|---|
 |   | O | X |
 |   | X | O |
 
 AI turn
 AI choose 1 0
 
- X | O | X 
------------
- O | O | X 
------------
-   | X | O 
+| X | O | X |
+|---|---|---|
+| O | O | X |
+|   | X | O |
 
 Your turn
 input X Y 0~2
 2 0
 Draw
 
- X | O | X 
------------
- O | O | X 
------------
- X | X | O 
+| X | O | X |
+|---|---|---|
+| O | O | X |
+| X | X | O |
 
 ## 貢獻
 如果您希望為此專案做出貢獻，請按照以下步驟：
@@ -190,106 +182,96 @@ This project uses CMake for compilation. Please follow the steps below to set up
 ## Example
 Assuming player X is the first player, the game process might look like this:
 
-Input how many games you want to play.
-1  
-Choose AI simulation mode: 1 = fixed simulation times, 2 = variable simulation times  
-1  
-Input how many iterations you want to run (must be greater than 10).  
-600000  
-Choose first or second player, input 1 or 2  
-1  
+Input how many game you want to play.
+1
+Choose AI simulation mode: 1 = fixed simulation times, 2 = variable simulation times
+1
+Input how many iteration you want to run (must be greater than 10).
+600000
+Choose first or second player, input 1 or 2
+1
 
 |   |   |   |
 |---|---|---|
 |   |   |   |
-|---|---|---|
 |   |   |   |
 
-Your turn  
-input X Y (0~2)  
-0 2  
+Your turn
+input X Y 0~2
+0 2
 
-|   |   |   |
-|---|---|---|
 |   |   | X |
 |---|---|---|
 |   |   |   |
-
-AI turn  
-AI choose 1 1  
-
-|   |   |   |
-|---|---|---|
-|   | O | X |
-|---|---|---|
 |   |   |   |
 
-Your turn  
-input X Y (0~2)  
-1 2  
+AI turn
+AI choose 1 1
 
-|   |   |   |
-|---|---|---|
-|   | O | X |
-|---|---|---|
 |   |   | X |
-
-AI turn  
-AI choose 2 2  
-
+|---|---|---|
+|   | O |   |
 |   |   |   |
+
+Your turn
+input X Y 0~2
+1 2
+
+|   |   | X |
 |---|---|---|
 |   | O | X |
+|   |   |   |
+
+
+AI turn
+AI choose 2 2
+
+|   |   | X |
 |---|---|---|
+|   | O | X |
 |   |   | O |
 
-Your turn  
-input X Y (0~2)  
-0 0  
+Your turn
+input X Y 0~2
+0 0
 
-|   |   |   |
-|---|---|---|
 | X |   | X |
 |---|---|---|
+|   | O | X |
 |   |   | O |
 
-AI turn  
-AI choose 0 1  
+AI turn
+AI choose 0 1
 
-|   |   |   |
-|---|---|---|
 | X | O | X |
 |---|---|---|
+|   | O | X |
 |   |   | O |
-
-Your turn  
-input X Y (0~2)  
-2 1  
-
-|   |   |   |
-|---|---|---|
+Your turn
+input X Y 0~2
+2 1
 | X | O | X |
 |---|---|---|
+|   | O | X |
 |   | X | O |
 
-AI turn  
-AI choose 1 0  
+AI turn
+AI choose 1 0
 
-|   |   |   |
-|---|---|---|
 | X | O | X |
 |---|---|---|
-| O | X | O |
+| O | O | X |
+|   | X | O |
 
-Your turn  
-input X Y (0~2)  
-2 0  
-Draw  
+Your turn
+input X Y 0~2
+2 0
+Draw
 
-|   |   |   |
 | X | O | X |
+|---|---|---|
+| O | O | X |
 | X | X | O |
- 
 
 ## Contributing
 If you would like to contribute to this project, please follow these steps:
