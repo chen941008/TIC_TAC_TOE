@@ -8,14 +8,13 @@
 
 using namespace std;
 int main() {
-    /*
     int gameTimes;
     cout << "Input how many game you want to play." << endl;
     cin >> gameTimes;
     for (int i = 0; i < gameTimes; i++) {
         startGame();
     }
-    */
+    /*
     int gameTimes = 30, totalTime = 0;
 
     // 創建一個 CSV 檔案來保存結果
@@ -50,5 +49,6 @@ int main() {
 
     // 關閉檔案
     outputFile.close();
+    */
     return 0;
 }
