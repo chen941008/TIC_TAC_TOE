@@ -8,14 +8,15 @@
 
 using namespace std;
 int main() {
-    int GameTimes;
-    cout << "Input how many game you want to play." << endl;
-    cin >> GameTimes;
-    for (int i = 0; i < GameTimes; i++) {
-        Game();
-    }
     /*
-    int GameTimes = 30, total_time = 0;
+    int gameTimes;
+    cout << "Input how many game you want to play." << endl;
+    cin >> gameTimes;
+    for (int i = 0; i < gameTimes; i++) {
+        startGame();
+    }
+    */
+    int gameTimes = 30, totalTime = 0;
 
     // 創建一個 CSV 檔案來保存結果
     ofstream outputFile("simulation_results_change_all_vector_to_array.csv");
@@ -29,15 +30,15 @@ int main() {
 
     // 模擬不同次數的情況
     for (simulationTimes = 1; simulationTimes <= 50; simulationTimes++) {
-        total_time = 0;
-        for (int i = 0; i < GameTimes; i++) {
+        totalTime = 0;
+        for (int i = 0; i < gameTimes; i++) {
             Node* root = new Node();  // 創建根節點
-            total_time += MCTS(root, 1000000);
+            totalTime += MCTS(root, 1000000);
             deleteTree(root);  // 刪除樹
         }
 
         // 計算平均時間
-        double average_time = total_time / static_cast<double>(GameTimes);
+        double average_time = totalTime / static_cast<double>(gameTimes);
 
         // 輸出到 CSV 檔案
         outputFile << simulationTimes << "," << average_time << endl;
@@ -49,6 +50,5 @@ int main() {
 
     // 關閉檔案
     outputFile.close();
-    */
     return 0;
 }
