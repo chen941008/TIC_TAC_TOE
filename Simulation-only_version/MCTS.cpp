@@ -1,18 +1,18 @@
 #include "MCTS.hpp"
 
 #include <chrono>
+#include <climits>
 #include <cmath>
 #include <iostream>
 #include <limits>
 #include <random>
 #include <set>
-#include <climits>
 
 #include "Game.hpp"
 #include "Node.hpp"
 
 using namespace std;
-int simulationTimes = 1;
+int simulationTimes = 50;
 random_device rd;         // 取得硬體隨機數
 mt19937 generator(rd());  // 初始化隨機數生成器
 double UCBCalculation(int ParentVisits, int NodeVisits, double NodeWins) {
@@ -27,10 +27,10 @@ int MCTS(Node* root, int iterations) {
     auto start = std::chrono::high_resolution_clock::now();
     // 記錄開始時間
     for (int i = 0; i < iterations; i++) {
-        if (root->isTerminal) {
+        Node* SelectedNode = Selection(root);  // 選擇best leaf node
+        if (SelectedNode->isTerminal) {        // 選到root 結束
             break;
         }
-        Node* SelectedNode = Selection(root);  // 選擇best leaf node
         if (SelectedNode->Visits != 0) {
             SelectedNode = Expansion(SelectedNode);
         }
@@ -58,25 +58,27 @@ Node* Selection(Node* node) {  // select the best leaf node
             nullptr) {    // 當前節點沒有子節點時，該節點為leaf node
             return node;  // node，返回該節點
         } else {          // 如果當前節點有子節點
-            Node* bestChild = nullptr;     // 紀錄最佳子節點
-            double bestValue = -100000.0;  // 紀錄最佳 UCB 值
-            for (int i = 0; i < 9; i++) {
+            Node* bestChild = nullptr;  // 紀錄最佳子節點
+            double bestValue =
+                std::numeric_limits<double>::lowest();  // 紀錄最佳 UCB 值
+            for (int i = 0; i < 9 && node->Children[i] != nullptr; i++) {
                 Node* child = node->Children[i];
-                if (child != nullptr &&
-                    !child->isTerminal) {  // 確保 child 不是空指標
-                    double ucbValue = UCBCalculation(
-                        node->Visits, child->Visits, child->Wins);
-                    // 更新最佳節點
-                    if (ucbValue > bestValue) {
-                        bestValue = ucbValue;
-                        bestChild = child;
-                    }
+
+                if (child->isTerminal) {
+                    continue;  // Skip terminal nodes
+                }
+                double ucbValue =
+                    UCBCalculation(node->Visits, child->Visits, child->Wins);
+                // 更新最佳節點
+                if (ucbValue > bestValue) {
+                    bestValue = ucbValue;
+                    bestChild = child;
                 }
             }
 
             // 如果至少一個子節點不是terminal，向下移動到該節點，繼續進行while
             // loop
-            if (bestChild) {
+            if (bestChild != nullptr) {
                 node = bestChild;
 
             } else {  // 如果所有子節點都是terminal，回溯到父節點繼續尋找，並將該節點設為terminal
@@ -104,12 +106,10 @@ void Backpropagation(
         if ((node->isXTurn == isXTurn && win > 0.0) ||
             (node->isXTurn != isXTurn && win < 0.0)) {
             node->Wins += fabs(win);
-        } else if (fabs(win) < 1e-9) {  // Tie with error value
-            double tieErrorValue = 0.01;
-            node->Wins += tieErrorValue;
-            node->Wins += 0;
+        } else if (fabs(win) < 1e-9) {
+            // 如果是平局，不增加勝利次數
         } else {
-            node->Wins += fabs(win) * -1;
+            node->Wins -= fabs(win);
         }
         node = node->Parent;
     }
@@ -123,21 +123,27 @@ Node* Expansion(Node* node) {
         TempNode = TempNode->Parent;
     }
 
-    if (std::all_of(&usedMoves[0][0], &usedMoves[0][0] + 9,
-                    [](bool v) { return v; })) {
-        return node;  // 棋盤滿了
+    bool isFull = true;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (usedMoves[i][j] == 0) {
+                isFull = false;
+                break;
+            }
+        }
     }
-
+    if (isFull) {
+        return node;
+    }
     int index = 0;
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (!usedMoves[i][j] && index < MAX_CHILDREN) {  // 若該位置未被使用
+            if (!usedMoves[i][j]) {  // 若該位置未被使用
                 Node* newNode = new Node({i, j}, node);
                 node->Children[index++] = newNode;
             }
         }
     }
-
     return node->Children[0];
 }
 

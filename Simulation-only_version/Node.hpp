@@ -66,7 +66,7 @@ struct Node {
           Parent(parent),
           Move(move),
           isTerminal(false),
-          isXTurn(!parent->isXTurn) {
+          isXTurn(!(parent->isXTurn)) {
         std::fill(std::begin(Children), std::end(Children),
                   nullptr);  // 初始化所有子節點為空指標
     }
