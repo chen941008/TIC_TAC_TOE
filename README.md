@@ -47,8 +47,8 @@ Input how many iteration you want to run (must be greater than 10).
 Choose first or second player, input 1 or 2
 1
 
-|---|---|---|
 |   |   |   |
+|---|---|---|
 |   |   |   |
 |   |   |   |
 
