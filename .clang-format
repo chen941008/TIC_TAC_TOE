@@ -1,0 +1,5 @@
+BasedOnStyle: Google         # 基於 Google 風格
+UseTab: Always               # 縮排與對齊都用 Tab
+ColumnLimit: 120             # 120 字符後才換行
+BreakBeforeBraces: Attach    # `{` 跟著上一行（K&R 風格）
+PenaltyExcessCharacter: 1000 # 減少不必要的換行
