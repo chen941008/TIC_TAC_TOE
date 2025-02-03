@@ -12,7 +12,7 @@
 #include "Node.hpp"
 
 using namespace std;
-int simulationTimes = 50;
+int simulationTimes = 5;
 random_device rd;         // 取得硬體隨機數
 mt19937 generator(rd());  // 初始化隨機數生成器
 double calculateUCB(int parentVisits, int nodeVisits, double nodeWins) {
@@ -61,12 +61,10 @@ Node* selection(Node* node) {  // select the best leaf node
             Node* bestChild = nullptr;  // 紀錄最佳子節點
             double bestValue =
                 std::numeric_limits<double>::lowest();  // 紀錄最佳 UCB 值
-            for (int i = 0; i < 9 && node->children[i] != nullptr; i++) {
+            for (int i = 0; i < MAX_CHILDREN && node->children[i] != nullptr;
+                 i++) {
                 Node* child = node->children[i];
 
-                if (child->isTerminal) {
-                    continue;  // Skip terminal nodes
-                }
                 double ucbValue =
                     calculateUCB(node->visits, child->visits, child->wins);
                 // 更新最佳節點
@@ -82,7 +80,7 @@ Node* selection(Node* node) {  // select the best leaf node
                 node = bestChild;
 
             } else {  // 如果所有子節點都是terminal，回溯到父節點繼續尋找，並將該節點設為terminal
-
+                setTerminalState(node);
                 node->isTerminal = true;
                 if (node->parent == nullptr) {  // 如果是根節點，直接返回
                     return node;
@@ -133,7 +131,7 @@ Node* expansion(Node* node) {
             }
         }
     }
-    if (isFull) {
+    if (isFull) {// 如果棋盤已滿，直接返回
         return node;
     }
     int index = 0;
@@ -163,6 +161,7 @@ int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
             board,
             startTurn)) {  // 如果節點的走步已經獲勝，也就是該路徑已有結果，設定isTerminal為true
         node->isTerminal = true;
+        node->state = WIN;
         return 1;
     }
     // 建立可能的走步
@@ -179,6 +178,7 @@ int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
     if (moveCount ==
         0) {  // 該node為最終節點，棋盤已滿，平手，並設置為isTerminal=true
         node->isTerminal = true;
+        node->state = DRAW;
         return 0;
     }
     // 將節點的走步依序放入棋盤(後續作業)
@@ -210,4 +210,32 @@ int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
     }
     // 平手
     return 0;
+}
+
+void setTerminalState(Node* node) {
+    // 確保節點存在且有子節點
+    if (node == nullptr) return;
+
+    // 預設為 LOSE（最低優先級）
+    terminalState result = LOSE;
+
+    for (int i = 0; i < MAX_CHILDREN && node->children[i] != nullptr; ++i) {
+        Node* child = node->children[i];
+
+        // 根據優先級更新 result
+        if (child->state == WIN) {
+            node->state = LOSE;
+            return;
+        } else if (child->state == DRAW) {
+            result = DRAW;  // 如果還未有更高優先級結果，設定為 DRAW
+        }
+        // 如果是 WIN，保持當前 result
+    }
+
+    // 更新當前節點的終局狀態
+    if(result == DRAW){
+        node->state = DRAW;
+    }else{
+        node->state = WIN;
+    }
 }
