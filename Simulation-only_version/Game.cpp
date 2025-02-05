@@ -7,7 +7,7 @@
 
 using namespace std;
 void startGame() {
-    int playerOrder, currentOrder = 0, aiMode, simulationTimes;
+    int playerOrder, currentOrder = 0, aiMode, iterationTimes;
     cout << "Choose AI simulation mode: 1 = fixed simulation times, 2 = "
             "variable simulation times"
          << endl;
@@ -18,8 +18,8 @@ void startGame() {
                 cout << "Input how many iteration you want to run (must be "
                         "greater than 10)."
                      << endl;
-                cin >> simulationTimes;
-                if (simulationTimes > 10) {
+                cin >> iterationTimes;
+                if (iterationTimes > 10) {
                     break;
                 }
                 cout << "Please input a number greater than 10." << endl;
@@ -33,8 +33,7 @@ void startGame() {
     }
     Node* root = new Node();
     expansion(root);
-    Node* currentNode =
-        root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
+    Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
     int board[3][3] = {0};
     cout << "Choose first or second player, input 1 or 2" << endl;
     while (true) {  // 選擇先手或後手，防白痴crash程式
@@ -75,8 +74,7 @@ void startGame() {
                 break;
             }
             for (int i = 0; i < 9 && currentNode->children[i] != nullptr; i++) {
-                if (currentNode->children[i]->move.X == X &&
-                    currentNode->children[i]->move.Y == Y) {
+                if (currentNode->children[i]->move.X == X && currentNode->children[i]->move.Y == Y) {
                     currentNode = currentNode->children[i];
                     break;
                 }
@@ -88,37 +86,27 @@ void startGame() {
                         "greater than 10)."
                      << endl;
                 do {
-                    cin >> simulationTimes;
-                    if (simulationTimes <= 10) {
-                        cout << "Please input a number greater than 10."
-                             << endl;
+                    cin >> iterationTimes;
+                    if (iterationTimes <= 10) {
+                        cout << "Please input a number greater than 10." << endl;
                     }
-                } while (simulationTimes <= 10);
+                } while (iterationTimes <= 10);
             }
-            MCTS(currentNode, simulationTimes);
+            MCTS(currentNode, iterationTimes);
             Node* bestChild = nullptr;
-            double bestScore = -std::numeric_limits<double>::infinity();
+            int mostVisit = 0;
 
-            for (int i = 0; i < 9 && currentNode->children[i] != nullptr; ++i) {
+            for (int i = 0; i < MAX_CHILDREN && currentNode->children[i] != nullptr; ++i) {
                 Node* child = currentNode->children[i];
-
                 // 計算綜合分數：考慮勝率、訪問次數和路徑長度
-                double winRate = static_cast<double>(child->wins) /
-                                 static_cast<double>(child->visits);
-                double visitRatio = static_cast<double>(child->visits) /
-                                    static_cast<double>(currentNode->visits);
-                double score = 1.0 * winRate + 0.0 * visitRatio;  // 可調整權重
-
-                if (score > bestScore) {
-                    bestScore = score;
+                if (child->visits > mostVisit) {
+                    mostVisit = child->visits;
                     bestChild = child;
                 }
             }
 
-            cout << "AI choose " << bestChild->move.X << " "
-                 << bestChild->move.Y << endl;
-            board[bestChild->move.X][bestChild->move.Y] =
-                playerOrder == 0 ? -1 : 1;
+            cout << "AI choose " << bestChild->move.X << " " << bestChild->move.Y << endl;
+            board[bestChild->move.X][bestChild->move.Y] = playerOrder == 0 ? -1 : 1;
             currentNode = bestChild;
             if (checkWin(board, playerOrder == 1)) {
                 cout << "AI win" << endl;
@@ -134,21 +122,17 @@ void startGame() {
 bool checkWin(int board[3][3], bool playTurn) {
     int player = playTurn ? 1 : -1;
     for (int i = 0; i < 3; i++) {
-        if (board[i][0] == player && board[i][1] == player &&
-            board[i][2] == player) {
+        if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
             return true;
         }
-        if (board[0][i] == player && board[1][i] == player &&
-            board[2][i] == player) {
+        if (board[0][i] == player && board[1][i] == player && board[2][i] == player) {
             return true;
         }
     }
-    if (board[0][0] == player && board[1][1] == player &&
-        board[2][2] == player) {
+    if (board[0][0] == player && board[1][1] == player && board[2][2] == player) {
         return true;
     }
-    if (board[0][2] == player && board[1][1] == player &&
-        board[2][0] == player) {
+    if (board[0][2] == player && board[1][1] == player && board[2][0] == player) {
         return true;
     }
     return false;

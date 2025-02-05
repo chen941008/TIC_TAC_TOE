@@ -1,9 +1,7 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include <vector>
 
-using std::vector;
 
 /**
  * @brief 遊戲的主邏輯控制函式

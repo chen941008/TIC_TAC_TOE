@@ -57,4 +57,17 @@ Node* expansion(Node* node);
  */
 int playout(Node* node);
 
+/**
+ * @brief 根據節點子節點的終局狀態設置當前節點的終局狀態
+ *
+ * 該函數通過檢查節點的所有子節點的 `terminalState`，根據優先級
+ * （LOSS > DRAW > WIN）選擇適當的狀態並設置給當前節點。
+ * 如果存在子節點的狀態為 LOSS，則當前節點狀態設為 WIN；
+ * 如果所有子節點都沒有 LOSS，但有 DRAW，則設為 DRAW；
+ * 如果所有子節點均為 WIN，則設為 LOSS。
+ *
+ * @param node 指向需要設置終局狀態的節點指標
+ */
+void setTerminalState(Node* node);
+
 #endif  // MCTS_HPP

@@ -29,6 +29,19 @@ struct Position {
 };
 
 /**
+ * @brief 表示遊戲的終局狀態
+ *
+ * 此列舉類型用於描述遊戲在某個節點的結束狀態，包括以下三種：
+ * - WIN: 表示該節點對應的玩家勝利。
+ * - DRAW: 表示該節點對應的遊戲平局。
+ * - NonTerminal: 表示該節點對應的遊戲未結束。
+ */
+enum terminalState {
+    WIN = 1,         ///< 玩家勝利
+    DRAW = 0,        ///< 遊戲平局
+    NonTerminal = 2  ///< 遊戲未結束
+};
+/**
  * @brief 表示遊戲節點的結構體，用於蒙地卡羅樹搜索
  */
 const int MAX_CHILDREN = 9;  ///< 每個節點最多的子節點數量
@@ -38,18 +51,13 @@ struct Node {
     Node* parent;                  ///< 指向父節點的指標
     Node* children[MAX_CHILDREN];  ///< 儲存該節點的所有子節點
     Position move;                 ///< 該節點對應的棋盤移動
-    bool isTerminal;               ///< 該節點是否為終局狀態
+    terminalState state;           ///< 該節點是否為終局狀態
     bool isXTurn;                  ///< 是否輪到 X 玩家行動
 
     /**
      * @brief 預設構造函數，初始化根節點
      */
-    Node()
-        : wins(0),
-          visits(0),
-          parent(nullptr),
-          isTerminal(false),
-          isXTurn(false) {
+    Node() : wins(0), visits(0), parent(nullptr), state(NonTerminal), isXTurn(false) {
         std::fill(std::begin(children), std::end(children), nullptr);
         move = Position{-1, -1};
     }
@@ -61,12 +69,7 @@ struct Node {
      * @param parent 指向父節點的指標
      */
     Node(Position move, Node* parent)
-        : wins(0),
-          visits(0),
-          parent(parent),
-          move(move),
-          isTerminal(false),
-          isXTurn(!(parent->isXTurn)) {
+        : wins(0), visits(0), parent(parent), move(move), state(NonTerminal), isXTurn(!(parent->isXTurn)) {
         std::fill(std::begin(children), std::end(children),
                   nullptr);  // 初始化所有子節點為空指標
     }

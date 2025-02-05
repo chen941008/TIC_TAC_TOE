@@ -5,5 +5,9 @@
     "editor.formatOnSave": true,
     "files.associations": {
         "ostream": "cpp"
-    }
+    },
+    "cSpell.words": [
+        "backpropagation",
+        "MCTS"
+    ]
 }
