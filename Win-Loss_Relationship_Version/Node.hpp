@@ -1,6 +1,6 @@
 #ifndef NODE_HPP
 #define NODE_HPP
-
+#include <algorithm>
 /// @brief 定義棋盤上位置的結構體
 ///
 /// 用來表示棋盤上的一個位置，包含 `X`（行）和 `Y`（列）。
@@ -32,10 +32,10 @@ struct Position {
  * - DRAW: 表示該節點對應的遊戲平局。
  */
 enum terminalState {
-    WIN = 1,    ///< 玩家勝利
-    LOSE = -1,  ///< 玩家失敗
-    DRAW = 0,    ///< 遊戲平局
-    NonTerminal = 2 ///< 遊戲未結束
+    WIN = 1,         ///< 玩家勝利
+    LOSE = -1,       ///< 玩家失敗
+    DRAW = 0,        ///< 遊戲平局
+    NonTerminal = 2  ///< 遊戲未結束
 };
 
 /**
@@ -49,19 +49,12 @@ struct Node {
     Node* parent;                  ///< 指向父節點的指標
     Node* children[MAX_CHILDREN];  ///< 儲存該節點的所有子節點
     Position move;                 ///< 該節點對應的棋盤移動
-    bool isTerminal;               ///< 該節點是否為終局狀態
     bool isXTurn;                  ///< 是否輪到 X 玩家行動
 
     /**
      * @brief 預設構造函數，初始化根節點
      */
-    Node()
-        : wins(0),
-          state(NonTerminal),
-          visits(0),
-          parent(nullptr),
-          isTerminal(false),
-          isXTurn(false) {
+    Node() : wins(0), state(NonTerminal), visits(0), parent(nullptr), isXTurn(false) {
         std::fill(std::begin(children), std::end(children), nullptr);
         move = Position{-1, -1};
     }
@@ -73,13 +66,7 @@ struct Node {
      * @param parent 指向父節點的指標
      */
     Node(Position move, Node* parent)
-        : wins(0),
-          state(NonTerminal),
-          visits(0),
-          parent(parent),
-          move(move),
-          isTerminal(false),
-          isXTurn(!(parent->isXTurn)) {
+        : wins(0), state(NonTerminal), visits(0), parent(parent), move(move), isXTurn(!(parent->isXTurn)) {
         std::fill(std::begin(children), std::end(children),
                   nullptr);  // 初始化所有子節點為空指標
     }
@@ -92,14 +79,12 @@ struct Node {
  */
 inline void deleteTree(Node* node) {
     if (node == nullptr) return;
-
     for (int i = 0; i < MAX_CHILDREN; i++) {
         if (node->children[i] != nullptr) {
             deleteTree(node->children[i]);
             node->children[i] = nullptr;  // 防止重複刪除
         }
     }
-
     delete node;
 }
 

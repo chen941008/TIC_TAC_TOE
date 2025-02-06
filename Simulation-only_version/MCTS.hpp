@@ -22,7 +22,7 @@ double calculateUCB(int parentVisits, int nodeVisits, double nodeWins);
  * @param iterations 演算法的迭代次數
  * @return int 演算法執行所花費的時間（毫秒）
  */
-int MCTS(Node* root, int iterations);
+void MCTS(Node* root, int iterations);
 
 /**
  * @brief MCTS 選擇階段

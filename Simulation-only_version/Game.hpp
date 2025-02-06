@@ -1,9 +1,7 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
-#include <vector>
-
-using std::vector;
+const int BOARD_SIZE = 3;
 
 /**
  * @brief 遊戲的主邏輯控制函式
@@ -18,13 +16,13 @@ void startGame();
  * @return true 如果當前玩家獲勝
  * @return false 如果當前玩家未獲勝
  */
-bool checkWin(int board[3][3], bool playTurn);
+bool checkWin(int board[BOARD_SIZE][BOARD_SIZE], bool playTurn);
 
 /**
  * @brief 輸出棋盤的當前狀態
  *
  * @param board 棋盤的二維陣列表示
  */
-void printBoard(int board[3][3]);
+void printBoard(int board[BOARD_SIZE][BOARD_SIZE]);
 
 #endif  // GAME_HPP

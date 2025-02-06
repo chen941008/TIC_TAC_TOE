@@ -12,19 +12,18 @@
 #include "Node.hpp"
 
 using namespace std;
-int simulationTimes = 50;
-random_device rd;         // 取得硬體隨機數
-mt19937 generator(rd());  // 初始化隨機數生成器
+const double COEFFICIENT = 1.41;  // UCB1算法的參數
+int simulationTimes;              // 實際定義變量
+random_device rd;                 // 取得硬體隨機數
+mt19937 generator(rd());          // 初始化隨機數生成器
 double calculateUCB(int parentVisits, int nodeVisits, double nodeWins) {
     if (nodeVisits == 0) {
         return static_cast<double>(INT_MAX);
     }
     return static_cast<double>(nodeWins) / static_cast<double>(nodeVisits) +
-           1.41 * sqrt(log(static_cast<double>(parentVisits)) / static_cast<double>(nodeVisits));
+           COEFFICIENT * sqrt(log(static_cast<double>(parentVisits)) / static_cast<double>(nodeVisits));
 }
-int MCTS(Node* root, int iterations) {
-    auto start = std::chrono::high_resolution_clock::now();
-    // 記錄開始時間
+void MCTS(Node* root, int iterations) {
     for (int i = 0; i < iterations; i++) {
         Node* selectedNode = selection(root);  // 選擇best leaf node
         if (selectedNode->state == WIN) {
@@ -47,11 +46,6 @@ int MCTS(Node* root, int iterations) {
         backpropagation(selectedNode, selectedNode->isXTurn,
                         playoutResult);  // 傳遞結果並更新節點資訊
     }
-    auto end = std::chrono::high_resolution_clock::now();  // 記錄結束時間
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    return duration.count();
-    // std::cout << "MCTS completed in " << duration.count() << " milliseconds."
-    //           << std::endl;
 }
 
 Node* selection(Node* node) {  // select the best leaf node
@@ -90,16 +84,15 @@ void backpropagation(Node* node, bool isXTurn,
 }
 
 Node* expansion(Node* node) {
-    bool usedPositions[3][3] = {false};  // 初始化棋盤的使用情況
+    bool usedPositions[BOARD_SIZE][BOARD_SIZE] = {false};  // 初始化棋盤的使用情況
     Node* nodePointer = node;
     while (nodePointer->parent != nullptr) {
         usedPositions[nodePointer->move.X][nodePointer->move.Y] = true;
         nodePointer = nodePointer->parent;
     }
-
     bool isFull = true;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             if (usedPositions[i][j] == 0) {
                 isFull = false;
                 break;
@@ -110,8 +103,8 @@ Node* expansion(Node* node) {
         return node;
     }
     int index = 0;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             if (!usedPositions[i][j]) {  // 若該位置未被使用
                 Node* newNode = new Node({i, j}, node);
                 node->children[index++] = newNode;
@@ -121,9 +114,9 @@ Node* expansion(Node* node) {
     return node->children[0];
 }
 
-int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
-                           // 1 win, 0 draw, -1 lose
-    int board[3][3] = {};  // 0: empty, 1: X, -1: O
+int playout(Node* node) {                    // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
+                                             // 1 win, 0 draw, -1 lose
+    int board[BOARD_SIZE][BOARD_SIZE] = {};  // 0: empty, 1: X, -1: O
     Node* nodePointer = node;
     bool startTurn = node->isXTurn, currentTurn = node->isXTurn;
     // 將節點的走步依序放入棋盤(前置作業)
@@ -139,9 +132,8 @@ int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
     // 建立可能的走步
     Position possibleMoves[9];  // 最大可能的走法數量為 9（3x3 棋盤）
     int moveCount = 0;          // 用來追蹤有效的走法數量
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             if (board[i][j] == 0) {
                 possibleMoves[moveCount++] = {i, j};  // 儲存有效的走法
             }
@@ -158,13 +150,10 @@ int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node
         uniform_int_distribution<int> distribution(0, moveCount - 1);
         int moveIndex = distribution(generator);
         Position move = possibleMoves[moveIndex];
-
         // 將選中的走步移到陣列最後，並減少 moveCount
         possibleMoves[moveIndex] = possibleMoves[moveCount - 1];
-        moveCount--;  // 移除最後一個走步
-
+        moveCount--;                                   // 移除最後一個走步
         board[move.X][move.Y] = currentTurn ? 1 : -1;  // 將走步放入棋盤
-
         // 檢查是否有玩家獲勝
         if (moveCount <= 4 && checkWin(board,
                                        currentTurn)) {  // 空格在四個以下才有可能獲勝，只需檢查下棋那方是否獲勝

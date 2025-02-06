@@ -8,36 +8,11 @@
 using namespace std;
 void startGame() {
     const int iterationTimes = 550000;
-    int playerOrder, currentOrder = 0, aiMode;
-    /*
-    cout << "Choose AI simulation mode: 1 = fixed simulation times, 2 = "
-            "variable simulation times"
-         << endl;
-    while (true) {
-        cin >> aiMode;
-        if (aiMode == 1) {
-            while (true) {
-                cout << "Input how many iteration you want to run (must be "
-                        "greater than 10)."
-                     << endl;
-                cin >> iterationTimes;
-                if (iterationTimes > 10) {
-                    break;
-                }
-                cout << "Please input a number greater than 10." << endl;
-            }
-            break;
-        }
-        if (aiMode == 2) {
-            break;
-        }
-        cout << "Please input 1 or 2" << endl;
-    }
-    */
+    int playerOrder, currentOrder = 0;
     Node* root = new Node();
     expansion(root);
     Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
-    int board[3][3] = {0};
+    int board[BOARD_SIZE][BOARD_SIZE] = {0};
     cout << "Choose first or second player, input 1 or 2" << endl;
     while (true) {  // 選擇先手或後手，防白痴crash程式
         cin >> playerOrder;
@@ -76,7 +51,7 @@ void startGame() {
                 printBoard(board);
                 break;
             }
-            for (int i = 0; i < 9 && currentNode->children[i] != nullptr; i++) {
+            for (int i = 0; i < MAX_CHILDREN && currentNode->children[i] != nullptr; i++) {
                 if (currentNode->children[i]->move.X == X && currentNode->children[i]->move.Y == Y) {
                     currentNode = currentNode->children[i];
                     break;
@@ -86,7 +61,6 @@ void startGame() {
             cout << "AI turn" << endl;
             MCTS(currentNode, iterationTimes);
             Node* bestChild = currentNode->children[0];
-
             for (int i = 1; i < MAX_CHILDREN && currentNode->children[i] != nullptr; ++i) {
                 Node* child = currentNode->children[i];
                 // 更新 `bestChild`，根據終局狀態優先順序 WIN > DRAW > LOSE
@@ -94,9 +68,7 @@ void startGame() {
                     bestChild = child;
                 }
             }
-
-            cout << "AI choose " << bestChild->move.X << " " << bestChild->move.Y << " terminalState is "
-                 << bestChild->state << endl;
+            cout << "AI choose " << bestChild->move.X << " " << bestChild->move.Y << endl;
             board[bestChild->move.X][bestChild->move.Y] = playerOrder == 0 ? -1 : 1;
             currentNode = bestChild;
             if (currentOrder >= 4 && checkWin(board, playerOrder == 1)) {
@@ -110,9 +82,9 @@ void startGame() {
     deleteTree(root);
 }
 
-bool checkWin(int board[3][3], bool playTurn) {
+bool checkWin(int board[BOARD_SIZE][BOARD_SIZE], bool playTurn) {
     int player = playTurn ? 1 : -1;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
         if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
             return true;
         }
@@ -129,10 +101,10 @@ bool checkWin(int board[3][3], bool playTurn) {
     return false;
 }
 
-void printBoard(int board[3][3]) {
+void printBoard(int board[BOARD_SIZE][BOARD_SIZE]) {
     cout << endl;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             if (board[i][j] == 1) {
                 cout << " X ";
             } else if (board[i][j] == -1) {

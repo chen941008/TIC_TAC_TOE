@@ -34,7 +34,7 @@ void startGame() {
     Node* root = new Node();
     expansion(root);
     Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
-    int board[3][3] = {0};
+    int board[BOARD_SIZE][BOARD_SIZE] = {0};
     cout << "Choose first or second player, input 1 or 2" << endl;
     while (true) {  // 選擇先手或後手，防白痴crash程式
         cin >> playerOrder;
@@ -68,12 +68,12 @@ void startGame() {
                 break;
             }
             board[X][Y] = playerOrder == 0 ? 1 : -1;
-            if (checkWin(board, playerOrder == 0)) {
+            if (currentOrder >= 4 && checkWin(board, playerOrder == 0)) {
                 cout << "You win" << endl;
                 printBoard(board);
                 break;
             }
-            for (int i = 0; i < 9 && currentNode->children[i] != nullptr; i++) {
+            for (int i = 0; i < MAX_CHILDREN && currentNode->children[i] != nullptr; i++) {
                 if (currentNode->children[i]->move.X == X && currentNode->children[i]->move.Y == Y) {
                     currentNode = currentNode->children[i];
                     break;
@@ -95,7 +95,6 @@ void startGame() {
             MCTS(currentNode, iterationTimes);
             Node* bestChild = nullptr;
             int mostVisit = 0;
-
             for (int i = 0; i < MAX_CHILDREN && currentNode->children[i] != nullptr; ++i) {
                 Node* child = currentNode->children[i];
                 // 計算綜合分數：考慮勝率、訪問次數和路徑長度
@@ -104,11 +103,10 @@ void startGame() {
                     bestChild = child;
                 }
             }
-
             cout << "AI choose " << bestChild->move.X << " " << bestChild->move.Y << endl;
             board[bestChild->move.X][bestChild->move.Y] = playerOrder == 0 ? -1 : 1;
             currentNode = bestChild;
-            if (checkWin(board, playerOrder == 1)) {
+            if (currentOrder >= 4 && checkWin(board, playerOrder == 1)) {
                 cout << "AI win" << endl;
                 printBoard(board);
                 break;
@@ -119,9 +117,9 @@ void startGame() {
     delete root;
 }
 
-bool checkWin(int board[3][3], bool playTurn) {
+bool checkWin(int board[BOARD_SIZE][BOARD_SIZE], bool playTurn) {
     int player = playTurn ? 1 : -1;
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
         if (board[i][0] == player && board[i][1] == player && board[i][2] == player) {
             return true;
         }
@@ -138,10 +136,10 @@ bool checkWin(int board[3][3], bool playTurn) {
     return false;
 }
 
-void printBoard(int board[3][3]) {
+void printBoard(int board[BOARD_SIZE][BOARD_SIZE]) {
     cout << endl;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
             if (board[i][j] == 1) {
                 cout << " X ";
             } else if (board[i][j] == -1) {

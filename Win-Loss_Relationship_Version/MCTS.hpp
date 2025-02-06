@@ -3,7 +3,6 @@
 
 // 前向聲明 Node 結構體，避免需要包含整個定義
 struct Node;
-extern int simulationTimes;
 
 /**
  * @brief 計算 UCB (Upper Confidence Bound) 值
@@ -20,9 +19,8 @@ double calculateUCB(int parentVisits, int nodeVisits, double nodeWins);
  *
  * @param root MCTS 演算法的根節點
  * @param iterations 演算法的迭代次數
- * @return int 演算法執行所花費的時間（毫秒）
  */
-int MCTS(Node* root, int iterations);
+void MCTS(Node* root, int iterations);
 
 /**
  * @brief MCTS 選擇階段
@@ -31,15 +29,6 @@ int MCTS(Node* root, int iterations);
  * @return Node* 選擇的最佳子節點
  */
 Node* selection(Node* node);
-
-/**
- * @brief MCTS 回傳階段 (Backpropagation)
- *
- * @param node 當前節點
- * @param isXTurn 是否是 X 的回合
- * @param win 模擬結果，表示勝利或敗北
- */
-void backpropagation(Node* node, bool isXTurn, double win);
 
 /**
  * @brief MCTS 擴展階段 (Expansion)
