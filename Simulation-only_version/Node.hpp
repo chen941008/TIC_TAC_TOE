@@ -6,28 +6,6 @@
 
 using std::array;
 
-/// @brief 定義棋盤上位置的結構體
-///
-/// 用來表示棋盤上的一個位置，包含 `X`（行）和 `Y`（列）。
-/// 此結構體也自訂了 `<` 比較運算子，適用於需要排序或插入集合（如
-/// `std::set`）的情況。
-struct Position {
-    int X, Y;  ///< 棋盤位置，`X` 代表行，`Y` 代表列
-
-    /// @brief 比較運算符，用於比較兩個 `Position` 的大小
-    ///
-    /// 先根據 `X` 值比較，若 `X` 值相等，再比較 `Y` 值。
-    /// 適用於排序容器（如 `std::set`）中的位置排序。
-    /// @param other 另一個 `Position` 物件
-    /// @return 如果當前 `Position` 小於 `other`，則返回 `true`
-    bool operator<(const Position& other) const {
-        if (X == other.X) {
-            return Y < other.Y;  ///< `X` 相等時比較 `Y`
-        }
-        return X < other.X;  ///< 根據 `X` 比較
-    }
-};
-
 /**
  * @brief 表示遊戲的終局狀態
  *
@@ -50,16 +28,15 @@ struct Node {
     int visits;                    ///< 該節點的訪問次數
     Node* parent;                  ///< 指向父節點的指標
     Node* children[MAX_CHILDREN];  ///< 儲存該節點的所有子節點
-    Position move;                 ///< 該節點對應的棋盤移動
+    int move;                      ///< 該節點對應的棋盤移動
     terminalState state;           ///< 該節點是否為終局狀態
     bool isXTurn;                  ///< 是否輪到 X 玩家行動
 
     /**
      * @brief 預設構造函數，初始化根節點
      */
-    Node() : wins(0), visits(0), parent(nullptr), state(NonTerminal), isXTurn(false) {
+    Node() : wins(0), visits(0), parent(nullptr), state(NonTerminal), isXTurn(false), move(-1) {
         std::fill(std::begin(children), std::end(children), nullptr);
-        move = Position{-1, -1};
     }
 
     /**
@@ -68,7 +45,7 @@ struct Node {
      * @param move 該節點對應的棋盤移動
      * @param parent 指向父節點的指標
      */
-    Node(Position move, Node* parent)
+    Node(int move, Node* parent)
         : wins(0), visits(0), parent(parent), move(move), state(NonTerminal), isXTurn(!(parent->isXTurn)) {
         std::fill(std::begin(children), std::end(children),
                   nullptr);  // 初始化所有子節點為空指標

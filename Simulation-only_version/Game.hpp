@@ -16,13 +16,13 @@ void startGame();
  * @return true 如果當前玩家獲勝
  * @return false 如果當前玩家未獲勝
  */
-bool checkWin(int board[BOARD_SIZE][BOARD_SIZE], bool playTurn);
+bool checkWin(int board[9], bool playTurn);
 
 /**
  * @brief 輸出棋盤的當前狀態
  *
  * @param board 棋盤的二維陣列表示
  */
-void printBoard(int board[BOARD_SIZE][BOARD_SIZE]);
+void printBoard(int board[9]);
 
 #endif  // GAME_HPP
