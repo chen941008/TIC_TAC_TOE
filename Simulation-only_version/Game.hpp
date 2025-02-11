@@ -3,6 +3,16 @@
 #include <stdint.h>
 const int BOARD_SIZE = 3;
 struct Node;
+constexpr uint16_t WIN_PATTERNS[] = {
+    0b111000000,  // 頂行
+    0b000111000,  // 中行
+    0b000000111,  // 底行
+    0b100100100,  // 左列
+    0b010010010,  // 中列
+    0b001001001,  // 右列
+    0b100010001,  // 主對角線
+    0b001010100   // 副對角線
+};
 /**
  * @brief 遊戲的主邏輯控制函式
  */
@@ -16,7 +26,15 @@ void startGame();
  * @return true 如果當前玩家獲勝
  * @return false 如果當前玩家未獲勝
  */
-bool checkWin(uint16_t boardX, uint16_t boardO, bool playTurn);
+inline bool checkWin(uint16_t boardX, uint16_t boardO, bool playTurn) {
+    uint16_t playerBoard = playTurn ? boardX : boardO;
+    for (int i = 0; i < 8; i++) {
+        if ((playerBoard & WIN_PATTERNS[i]) == WIN_PATTERNS[i]) {
+            return true;
+        }
+    }
+    return false;
+}
 
 /**
  * @brief 輸出棋盤的當前狀態

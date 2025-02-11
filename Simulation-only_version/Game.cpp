@@ -8,9 +8,6 @@
 #include "Node.hpp"
 
 using namespace std;
-// 在檔案頂端定義一個全域靜態常數陣列
-static const uint16_t WIN_PATTERNS[8] = {0b111000000, 0b000111000, 0b000000111, 0b100100100,
-                                         0b010010010, 0b001001001, 0b100010001, 0b001010100};
 
 void startGame() {
     Node* root = new Node();
@@ -152,16 +149,6 @@ void startGame() {
         currentOrder++;
     }
     delete root;
-}
-
-bool checkWin(uint16_t boardX, uint16_t boardO, bool playTurn) {
-    uint16_t playerBoard = playTurn ? boardX : boardO;
-    for (int i = 0; i < 8; i++) {
-        if ((playerBoard & WIN_PATTERNS[i]) == WIN_PATTERNS[i]) {
-            return true;
-        }
-    }
-    return false;
 }
 
 void printBoard(uint16_t boardX, uint16_t boardO) {

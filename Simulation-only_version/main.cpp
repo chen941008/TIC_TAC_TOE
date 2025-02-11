@@ -12,7 +12,7 @@ int main() {
     int gameTimes;
     cout << "Input how many game you want to play." << endl;
     cin >> gameTimes;
-    cout << "Input stimulation times.(suggest less than 50)" << endl;
+    cout << "Input stimulation times." << endl;
     cin >> simulationTimes;
     for (int i = 0; i < gameTimes; i++) {
         startGame();
@@ -20,7 +20,7 @@ int main() {
     */
     int gameTimes = 30, totalTime = 0;
     // 創建一個 CSV 檔案來保存結果
-    ofstream outputFile("pre-generate_board.csv");
+    ofstream outputFile("inline_2.csv");
     if (!outputFile.is_open()) {
         cerr << "Error: Unable to open output file!" << endl;
         return 1;
@@ -32,7 +32,7 @@ int main() {
         totalTime = 0;
         for (int i = 0; i < gameTimes; i++) {
             Node* root = new Node();  // 創建根節點
-            // generateFullTree(root);   // 生成完整遊戲樹
+            generateFullTree(root);   // 生成完整遊戲樹
             totalTime += MCTS(root, 1000000);
             deleteTree(root);  // 刪除樹
         }
