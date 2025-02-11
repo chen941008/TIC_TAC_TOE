@@ -6,16 +6,6 @@ struct Node;
 extern int simulationTimes;
 
 /**
- * @brief 計算 UCB (Upper Confidence Bound) 值
- *
- * @param parentVisits 父節點的訪問次數
- * @param nodeVisits 當前節點的訪問次數
- * @param nodeWins 當前節點的勝利次數
- * @return double 計算得到的 UCB 值
- */
-double calculateUCB(int parentVisits, int nodeVisits, double nodeWins);
-
-/**
  * @brief 執行 MCTS (Monte Carlo Tree Search) 演算法
  *
  * @param root MCTS 演算法的根節點

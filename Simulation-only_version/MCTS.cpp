@@ -18,13 +18,7 @@ const double COEFFICIENT = 1.41;  // UCB1算法的參數
 int simulationTimes;              // 實際定義變量
 random_device rd;                 // 取得硬體隨機數
 mt19937 generator(rd());          // 初始化隨機數生成器
-double calculateUCB(int parentVisits, int nodeVisits, double nodeWins) {
-    if (nodeVisits == 0) {
-        return static_cast<double>(INT_MAX);
-    }
-    return static_cast<double>(nodeWins) / static_cast<double>(nodeVisits) +
-           COEFFICIENT * sqrt(log(static_cast<double>(parentVisits)) / static_cast<double>(nodeVisits));
-}
+
 int MCTS(Node* root, int iterations) {
     auto start = std::chrono::high_resolution_clock::now();
     // 記錄開始時間
@@ -63,10 +57,13 @@ Node* selection(Node* node) {  // select the best leaf node
         } else {                                                       // 如果當前節點有子節點
             bestChild = nullptr;                                       // 紀錄最佳子節點
             double bestValue = std::numeric_limits<double>::lowest();  // 紀錄最佳 UCB 值
+            double logParent = log(node->visits);
             for (int i = 0; i < MAX_CHILDREN && node->children[i] != nullptr; i++) {
                 Node* child = node->children[i];
-                double ucbValue = calculateUCB(node->visits, child->visits, child->wins);
-                // 更新最佳節點
+                // 避免每次都重算 log(node->visits)
+                double ucbValue = (child->visits == 0)
+                                      ? static_cast<double>(INT_MAX)
+                                      : (child->wins / child->visits) + COEFFICIENT * sqrt(logParent / child->visits);
                 if (ucbValue > bestValue) {
                     bestValue = ucbValue;
                     bestChild = child;
@@ -136,16 +133,16 @@ int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳值為 n
         }
     }
 
-    std::uniform_int_distribution<int> distribution(0, count - 1);
+    // 事先隨機打亂 possibleMoves 陣列
+    for (int i = count - 1; i > 0; --i) {
+        int j = generator() % (i + 1);
+        swap(possibleMoves[i], possibleMoves[j]);  // 交換 i 和 j
+    }
 
-    // 隨機模擬遊戲進行
-    while (count > 0) {
+    // 依序模擬遊戲進行
+    for (int i = count - 1; i >= 0; i--) {
         currentTurn = !currentTurn;  // 換手
-        int moveIndex = distribution(generator);
-        int move = possibleMoves[moveIndex];
-
-        // 將已選位置移到陣列尾部並減少計數
-        possibleMoves[moveIndex] = possibleMoves[--count];
+        int move = possibleMoves[i];
 
         if (currentTurn) {
             boardX |= (1 << move);
@@ -153,10 +150,10 @@ int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳值為 n
             boardO |= (1 << move);
         }
 
-        // 只需檢查下棋的那方是否獲勝
-        if (checkWin(boardX, boardO, currentTurn)) {
+        if (i <= 4 && checkWin(boardX, boardO, currentTurn)) {
             return (currentTurn == startTurn) ? 1 : -1;
         }
     }
+
     return 0;  // 平手
 }

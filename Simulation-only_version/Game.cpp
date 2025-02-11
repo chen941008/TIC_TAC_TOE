@@ -8,7 +8,14 @@
 #include "Node.hpp"
 
 using namespace std;
+// 在檔案頂端定義一個全域靜態常數陣列
+static const uint16_t WIN_PATTERNS[8] = {0b111000000, 0b000111000, 0b000000111, 0b100100100,
+                                         0b010010010, 0b001001001, 0b100010001, 0b001010100};
+
 void startGame() {
+    Node* root = new Node();
+    generateFullTree(root);
+    Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
     int playerOrder, currentOrder = 0, aiMode, iterationTimes;
     cout << "Choose AI simulation mode: 1 = fixed simulation times, 2 = "
             "variable simulation times"
@@ -33,9 +40,6 @@ void startGame() {
         }
         cout << "Please input 1 or 2" << endl;
     }
-    Node* root = new Node();
-    expansion(root);
-    Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
     // 用 bitboard 表示棋盤，初始皆為 0
     uint16_t boardX = 0;
     uint16_t boardO = 0;
@@ -151,11 +155,9 @@ void startGame() {
 }
 
 bool checkWin(uint16_t boardX, uint16_t boardO, bool playTurn) {
-    uint16_t const winPattern[8] = {0b111000000, 0b000111000, 0b000000111, 0b100100100,
-                                    0b010010010, 0b001001001, 0b100010001, 0b001010100};
     uint16_t playerBoard = playTurn ? boardX : boardO;
     for (int i = 0; i < 8; i++) {
-        if ((playerBoard & winPattern[i]) == winPattern[i]) {
+        if ((playerBoard & WIN_PATTERNS[i]) == WIN_PATTERNS[i]) {
             return true;
         }
     }
@@ -180,4 +182,33 @@ void printBoard(uint16_t boardX, uint16_t boardO) {
         if (i < 2) cout << "-----------" << endl;  // 每行之後加上分隔線
     }
     cout << endl;
+}
+
+// 遞迴生成完整遊戲樹的函式
+void generateFullTree(Node* node) {
+    // 取得當前棋盤已使用的位置
+    uint16_t usedPositions = node->boardX | node->boardO;
+
+    // 如果棋盤已滿，或者當前局面已經分出勝負，就不再展開
+    if (usedPositions == 0b111111111) {
+        node->state = DRAW;
+        return;
+    } else if (checkWin(node->boardX, node->boardO, node->isXTurn)) {
+        node->state = WIN;
+        return;
+    }
+
+    int childIndex = 0;
+    // 對於棋盤上的每個位置，若未被使用，則產生一個新節點
+    for (int i = 0; i < 9; i++) {
+        if (!(usedPositions & (1 << i))) {      // 若位置 i 未被使用
+            Node* newNode = new Node(i, node);  // 依據父節點狀態及這步 move 建立新節點
+            node->children[childIndex++] = newNode;
+        }
+    }
+
+    // 遞迴產生每個子節點的遊戲樹
+    for (int i = 0; i < childIndex; i++) {
+        generateFullTree(node->children[i]);
+    }
 }
