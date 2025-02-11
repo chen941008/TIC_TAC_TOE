@@ -20,7 +20,7 @@ int main() {
     */
     int gameTimes = 30, totalTime = 0;
     // 創建一個 CSV 檔案來保存結果
-    ofstream outputFile("One-dimensional_array.csv");
+    ofstream outputFile("bitboard.csv");
     if (!outputFile.is_open()) {
         cerr << "Error: Unable to open output file!" << endl;
         return 1;

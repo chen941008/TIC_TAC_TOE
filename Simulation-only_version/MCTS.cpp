@@ -1,5 +1,7 @@
 #include "MCTS.hpp"
 
+#include <stdint.h>
+
 #include <chrono>
 #include <climits>
 #include <cmath>
@@ -89,80 +91,72 @@ void backpropagation(Node* node, bool isXTurn,
 }
 
 Node* expansion(Node* node) {
-    bool usedPositions[9] = {false};  // 初始化棋盤的使用情況
-    Node* nodePointer = node;
-    while (nodePointer->parent != nullptr) {
-        usedPositions[nodePointer->move] = true;
-        nodePointer = nodePointer->parent;
-    }
-    bool isFull = true;
-    for (int i = 0; i < 9; i++) {
-        if (!usedPositions[i]) {
-            isFull = false;
-            break;
-        }
-    }
-    if (isFull) {
+    uint16_t usedPositions = node->boardX | node->boardO;  // 獲取已使用的位置
+    if (usedPositions == 0b111111111) {                    // 棋盤已滿
         return node;
     }
     int index = 0;
     for (int i = 0; i < 9; i++) {
-        if (!usedPositions[i]) {  // 若該位置未被使用
+        if (!(usedPositions & (1 << i))) {  // 如果該位置未被使用
             Node* newNode = new Node(i, node);
             node->children[index++] = newNode;
         }
     }
-    return node->children[0];
+    return node->children[0];  // 返回第一個擴展的子節點
 }
 
-int playout(Node* node) {  // 在該node的回合開始遊戲，回傳值為node方的勝負關係：
+int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳值為 node 方的勝負關係：
                            // 1 win, 0 draw, -1 lose
-    int board[9] = {};     // 0: empty, 1: X, -1: O
-    Node* nodePointer = node;
-    bool startTurn = node->isXTurn, currentTurn = node->isXTurn;
-    // 將節點的走步依序放入棋盤(前置作業)
-    while (nodePointer->parent != nullptr) {
-        board[nodePointer->move] = nodePointer->isXTurn ? 1 : -1;
-        nodePointer = nodePointer->parent;
-    }
-    if (checkWin(board,
-                 startTurn)) {  // 如果節點的走步已經獲勝，也就是該路徑已有結果，設定isTerminal為true
+    uint16_t boardX = node->boardX;
+    uint16_t boardO = node->boardO;
+    bool startTurn = node->isXTurn;
+    bool currentTurn = startTurn;
+
+    // 如果當前節點已經是一個勝利狀態，直接回傳勝利
+    if (checkWin(boardX, boardO, startTurn)) {
         node->state = WIN;
         return 1;
     }
+
     // 建立可能的走步
-    int possibleMoves[9] = {false};  // 最大可能的走法數量為 9（3x3 棋盤）
-    int moveCount = 0;               // 用來追蹤有效的走法數量
-    for (int i = 0; i < 9; i++) {
-        if (board[i] == 0) {
-            possibleMoves[moveCount++] = i;  // 儲存有效的走法
-        }
-    }
-    if (moveCount == 0) {  // 該node為最終節點，棋盤已滿，平手，並設置為isTerminal=true
+    uint16_t usedPositions = boardX | boardO;                // 紀錄已使用的位置
+    uint16_t availableMoves = ~usedPositions & 0b111111111;  // 取得可用位置
+    if (availableMoves == 0) {                               // 棋盤已滿，平手
         node->state = DRAW;
         return 0;
     }
-    // 將節點的走步依序放入棋盤(後續作業)
-    while (moveCount > 0) {
-        // 隨機選擇一個走步
-        currentTurn = !currentTurn;  // 換手
-        uniform_int_distribution<int> distribution(0, moveCount - 1);
-        int moveIndex = distribution(generator);
-        int move = possibleMoves[moveIndex];
-        // 將選中的走步移到陣列最後，並減少 moveCount
-        possibleMoves[moveIndex] = possibleMoves[moveCount - 1];
-        moveCount--;                         // 移除最後一個走步
-        board[move] = currentTurn ? 1 : -1;  // 將走步放入棋盤
-        // 檢查是否有玩家獲勝
-        if (moveCount <= 4 && checkWin(board,
-                                       currentTurn)) {  // 空格在四個以下才有可能獲勝，只需檢查下棋那方是否獲勝
-            if (currentTurn == startTurn) {             // 勝利方為開始下棋的那方=node方獲勝
-                return 1;
-            } else {  // 勝利方為非開始下棋的那方=node方輸
-                return -1;
-            }
+
+    int possibleMoves[9];
+    int count = 0;
+
+    // 取得所有可用位置
+    for (int i = 0; i < 9; i++) {
+        if (availableMoves & (1 << i)) {
+            possibleMoves[count++] = i;
         }
     }
-    // 平手
-    return 0;
+
+    std::uniform_int_distribution<int> distribution(0, count - 1);
+
+    // 隨機模擬遊戲進行
+    while (count > 0) {
+        currentTurn = !currentTurn;  // 換手
+        int moveIndex = distribution(generator);
+        int move = possibleMoves[moveIndex];
+
+        // 將已選位置移到陣列尾部並減少計數
+        possibleMoves[moveIndex] = possibleMoves[--count];
+
+        if (currentTurn) {
+            boardX |= (1 << move);
+        } else {
+            boardO |= (1 << move);
+        }
+
+        // 只需檢查下棋的那方是否獲勝
+        if (checkWin(boardX, boardO, currentTurn)) {
+            return (currentTurn == startTurn) ? 1 : -1;
+        }
+    }
+    return 0;  // 平手
 }

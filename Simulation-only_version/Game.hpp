@@ -1,6 +1,6 @@
 #ifndef GAME_HPP
 #define GAME_HPP
-
+#include <stdint.h>
 const int BOARD_SIZE = 3;
 
 /**
@@ -16,13 +16,13 @@ void startGame();
  * @return true 如果當前玩家獲勝
  * @return false 如果當前玩家未獲勝
  */
-bool checkWin(int board[9], bool playTurn);
+bool checkWin(uint16_t boardX, uint16_t boardO, bool playTurn);
 
 /**
  * @brief 輸出棋盤的當前狀態
  *
  * @param board 棋盤的二維陣列表示
  */
-void printBoard(int board[9]);
+void printBoard(uint16_t boardX, uint16_t boardO);
 
 #endif  // GAME_HPP
