@@ -7,6 +7,15 @@
 #include <vector>
 using std::array;
 
+const int MAX_CHILDREN = 9;  ///< 每個節點最多的子節點數量（對應 3x3 棋盤）
+
+enum class BoardState {
+    PLAYING = 2,  ///< 遊戲進行中
+    DRAW = 0,     ///< 平局
+    WIN = 1,      ///< 有玩家獲勝
+    LOSE = -1     ///< 有玩家輸了
+};
+
 /**
  * @brief 表示遊戲節點的結構體，用於蒙特卡洛樹搜索 (MCTS)
  *
@@ -17,22 +26,15 @@ using std::array;
  * - `boardO` 記錄 O 玩家的落子位置
  * - `isXTurn` 記錄當前是否輪到 X 玩家
  */
-const int MAX_CHILDREN = 9;  ///< 每個節點最多的子節點數量（對應 3x3 棋盤）
-
-enum BoardState {
-    PLAYING,  ///< 遊戲進行中
-    DRAW,     ///< 平局
-    WIN       ///< 有玩家獲勝
-};
 struct Node {
+    double wins;                   ///< 該節點的獲勝次數
+    int visits;                    ///< 該節點的訪問次數
+    BoardState state;              ///< 棋盤的狀態（勝利、平局或遊戲進行中）
     uint16_t boardX;               ///< 棋盤狀態（X 玩家的位棋盤）
     uint16_t boardO;               ///< 棋盤狀態（O 玩家的位棋盤）
-    BoardState state;              ///< 棋盤的狀態（勝利、平局或遊戲進行中）
     bool isXTurn;                  ///< 是否是 X 玩家的回合
-    double wins;                   ///< 該節點的獲勝次數（模擬過程中用於計算節點的價值）
-    int visits;                    ///< 該節點的訪問次數（用於判斷節點的探索程度）
-    Node* parent;                  ///< 指向父節點的指標（用於回溯到父節點進行統計更新）
-    Node* children[MAX_CHILDREN];  ///< 儲存該節點的所有子節點指標（最多 9 個，對應 3x3 棋盤的每個位置）
+    Node* parent;                  ///< 指向父節點的指標
+    Node* children[MAX_CHILDREN];  ///< 指向子節點的指標陣列
 
     /**
      * @brief 預設構造函數，初始化根節點
@@ -45,7 +47,7 @@ struct Node {
      * - 父節點 (`parent`) 設為 `nullptr`
      * - 所有子節點 (`children`) 初始化為空指標
      */
-    Node() : wins(0), visits(0), parent(nullptr), boardX(0), boardO(0), isXTurn(false), state(PLAYING) {
+    Node() : wins(0), visits(0), parent(nullptr), boardX(0), boardO(0), isXTurn(false), state(BoardState::PLAYING) {
         std::fill(std::begin(children), std::end(children), nullptr);
     }
 
@@ -61,7 +63,8 @@ struct Node {
      * @param move 該節點對應的棋盤移動位置 (0~8)，表示當前玩家落子的格子
      * @param parent 指向父節點的指標，表示該子節點由哪個父節點衍生
      */
-    Node(uint16_t move, Node* parent) : wins(0), visits(0), parent(parent), isXTurn(!parent->isXTurn), state(PLAYING) {
+    Node(uint16_t move, Node* parent)
+        : wins(0), visits(0), parent(parent), isXTurn(!parent->isXTurn), state(BoardState::PLAYING) {
         boardX = parent->boardX;
         boardO = parent->boardO;
 

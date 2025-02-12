@@ -19,20 +19,20 @@ void startGame() {
          << endl;
     while (true) {
         cin >> aiMode;
-        if (aiMode == 1) {
+        if (aiMode == aiMode::FIXED_SIMULATION_TIMES) {
             while (true) {
                 cout << "Input how many iteration you want to run (must be "
-                        "greater than 10)."
+                        "greater than 9)."
                      << endl;
                 cin >> iterationTimes;
-                if (iterationTimes > 10) {
+                if (iterationTimes > MAX_CHILDREN) {
                     break;
                 }
-                cout << "Please input a number greater than 10." << endl;
+                cout << "Please input a number greater than 9." << endl;
             }
             break;
         }
-        if (aiMode == 2) {
+        if (aiMode == aiMode::VARIABLE_SIMULATION_TIMES) {
             break;
         }
         cout << "Please input 1 or 2" << endl;
@@ -50,7 +50,7 @@ void startGame() {
     }
     playerOrder--;
     while (true) {
-        if (currentOrder == 9) {
+        if (currentOrder == MAX_CHILDREN) {
             cout << "Draw" << endl;
             printBoard(boardX, boardO);
             break;
@@ -66,7 +66,7 @@ void startGame() {
                     cout << "Please input 0~2" << endl;
                     continue;
                 }
-                moveIndex = X * 3 + Y;
+                moveIndex = X * BOARD_SIZE + Y;
                 // 檢查該位置是否已被佔用
                 if ((boardX | boardO) & (1 << moveIndex)) {
                     cout << "This position is already taken" << endl;
@@ -79,7 +79,7 @@ void startGame() {
             } else {
                 boardO |= (1 << moveIndex);
             }
-            if (currentOrder >= 4 && checkWin(boardX, boardO, playerOrder == 0)) {
+            if (currentOrder >= CHECKWIN_THRESHOLD && checkWin(boardX, boardO, playerOrder == 0)) {
                 cout << "You win" << endl;
                 printBoard(boardX, boardO);
                 break;
@@ -92,16 +92,16 @@ void startGame() {
             }
         } else {  // AI turn
             cout << "AI turn" << endl;
-            if (aiMode == 2) {
+            if (aiMode == aiMode::VARIABLE_SIMULATION_TIMES) {
                 cout << "Input how many iteration you want to run (must be "
-                        "greater than 10)."
+                        "greater than 9)."
                      << endl;
                 do {
                     cin >> iterationTimes;
-                    if (iterationTimes <= 10) {
-                        cout << "Please input a number greater than 10." << endl;
+                    if (iterationTimes <= MAX_CHILDREN) {
+                        cout << "Please input a number greater than 9." << endl;
                     }
-                } while (iterationTimes <= 10);
+                } while (iterationTimes <= MAX_CHILDREN);
             }
             uint16_t prevBoardX = boardX;
             uint16_t prevBoardO = boardO;
@@ -119,7 +119,7 @@ void startGame() {
             if (currentOrder % 2 == 0) {
                 // 當前回合為 X 時，差異應出現在 boardX
                 uint16_t diff = bestChild->boardX & ~(prevBoardX);
-                for (int idx = 0; idx < 9; idx++) {
+                for (int idx = 0; idx < MAX_CHILDREN; idx++) {
                     if (diff & (1 << idx)) {
                         moveIndex = idx;
                         break;
@@ -128,19 +128,19 @@ void startGame() {
             } else {
                 // 當前回合為 O 時，差異應出現在 boardO
                 uint16_t diff = bestChild->boardO & ~(prevBoardO);
-                for (int idx = 0; idx < 9; idx++) {
+                for (int idx = 0; idx < MAX_CHILDREN; idx++) {
                     if (diff & (1 << idx)) {
                         moveIndex = idx;
                         break;
                     }
                 }
             }
-            cout << "AI choose " << moveIndex / 3 << " " << moveIndex % 3 << endl;
+            cout << "AI choose " << moveIndex / BOARD_SIZE << " " << moveIndex % BOARD_SIZE << endl;
             // 更新本地棋盤狀態以及 currentNode
             boardX = bestChild->boardX;
             boardO = bestChild->boardO;
             currentNode = bestChild;
-            if (currentOrder >= 4 && checkWin(boardX, boardO, (currentOrder % 2 == 0))) {
+            if (currentOrder >= CHECKWIN_THRESHOLD && checkWin(boardX, boardO, (currentOrder % 2 == 0))) {
                 cout << "AI win" << endl;
                 printBoard(boardX, boardO);
                 break;
@@ -153,9 +153,10 @@ void startGame() {
 
 void printBoard(uint16_t boardX, uint16_t boardO) {
     cout << endl;
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            int index = i * 3 + j;        // 將 2D 轉換為 1D 索引
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        int temp = i * BOARD_SIZE;
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            int index = temp + j;         // 將 2D 轉換為 1D 索引
             if (boardX & (1 << index)) {  // 檢查 X 的棋子
                 cout << " X ";
             } else if (boardO & (1 << index)) {  // 檢查 O 的棋子
@@ -178,16 +179,16 @@ void generateFullTree(Node* node) {
 
     // 如果棋盤已滿，或者當前局面已經分出勝負，就不再展開
     if (usedPositions == 0b111111111) {
-        node->state = DRAW;
+        node->state = BoardState::DRAW;
         return;
     } else if (checkWin(node->boardX, node->boardO, node->isXTurn)) {
-        node->state = WIN;
+        node->state = BoardState::WIN;
         return;
     }
 
     int childIndex = 0;
     // 對於棋盤上的每個位置，若未被使用，則產生一個新節點
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < MAX_CHILDREN; i++) {
         if (!(usedPositions & (1 << i))) {      // 若位置 i 未被使用
             Node* newNode = new Node(i, node);  // 依據父節點狀態及這步 move 建立新節點
             node->children[childIndex++] = newNode;

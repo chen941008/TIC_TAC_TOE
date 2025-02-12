@@ -2,7 +2,9 @@
 #define GAME_HPP
 #include <stdint.h>
 const int BOARD_SIZE = 3;
+const int CHECKWIN_THRESHOLD = 4;
 struct Node;
+enum aiMode { FIXED_SIMULATION_TIMES = 1, VARIABLE_SIMULATION_TIMES = 2 };
 constexpr uint16_t WIN_PATTERNS[] = {
     0b111000000,  // 頂行
     0b000111000,  // 中行

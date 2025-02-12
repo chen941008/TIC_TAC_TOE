@@ -18,28 +18,27 @@
 #include "Node.hpp"
 
 using namespace std;
-const double COEFFICIENT = 1.41;                  // UCB1算法的參數
-int simulationTimes;                              // 實際定義變量
-random_device rd;                                 // 取得硬體隨機數
-static thread_local xoshiro256ss rng(123456789);  // 使用固定種子，也可以根據需求改變
+const double COEFFICIENT = 1.41;  // UCB1算法的參數
+int simulationTimes;              // 實際定義變量
+random_device rd;                 // 取得硬體隨機數
+mt19937 generator(rd());          // 初始化隨機數生成器
 
 int MCTS(Node* root, int iterations) {
     auto start = std::chrono::high_resolution_clock::now();
     // 記錄開始時間
     for (int i = 0; i < iterations; i++) {
         Node* selectedNode = selection(root);  // 選擇best leaf node
-        if (selectedNode->state == WIN) {
-            backpropagation(selectedNode, root->parent, selectedNode->isXTurn, 1.0);
+        if (selectedNode->state == BoardState::WIN) {
+            backpropagation(selectedNode, root->parent, selectedNode->isXTurn, static_cast<double>(BoardState::WIN));
             continue;
         }
-        if (selectedNode->state == DRAW) {
-            backpropagation(selectedNode, root->parent, selectedNode->isXTurn, 0.0);
+        if (selectedNode->state == BoardState::DRAW) {
+            backpropagation(selectedNode, root->parent, selectedNode->isXTurn, static_cast<double>(BoardState::DRAW));
             continue;
         }
         double playoutResult = 0.0;
-        for (int j = 0; j < simulationTimes; j++) {
-            playoutResult += playout(selectedNode);  // 模擬遊戲 1 = selected node win, 0 =
-                                                     // draw, -1 = selected node lose
+        for (int i = 0; i < simulationTimes; i++) {
+            playoutResult += playout(selectedNode);
         }
         playoutResult /= simulationTimes;
         backpropagation(selectedNode, root->parent, selectedNode->isXTurn,
@@ -64,7 +63,6 @@ inline Node* selection(Node* node) {  // select the best leaf node
                 if (child->visits == 0) {
                     return child;
                 }
-
                 double ucbValue = (child->wins / child->visits) + COEFFICIENT * sqrt(logParent / child->visits);
                 if (ucbValue > bestValue) {
                     bestValue = ucbValue;
@@ -89,8 +87,7 @@ inline void backpropagation(Node* node, Node* endNode, bool isXTurn,
     }
 }
 
-inline int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳值為 node 方的勝負關係：
-                                  // 1 win, 0 draw, -1 lose
+inline int playout(Node* node) {
     uint16_t boardX = node->boardX;
     uint16_t boardO = node->boardO;
     bool startTurn = node->isXTurn;
@@ -100,11 +97,11 @@ inline int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳�
     uint16_t usedPositions = boardX | boardO;                // 紀錄已使用的位置
     uint16_t availableMoves = ~usedPositions & 0b111111111;  // 取得可用位置
 
-    int possibleMoves[9];
+    int possibleMoves[MAX_CHILDREN];
     int count = 0;
 
     // 取得所有可用位置
-    for (int i = 0; i < 9; i++) {
+    for (int i = 0; i < MAX_CHILDREN; i++) {
         if (availableMoves & (1 << i)) {
             possibleMoves[count++] = i;
         }
@@ -112,7 +109,7 @@ inline int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳�
 
     // 事先隨機打亂 possibleMoves 陣列
     for (int i = count - 1; i > 0; --i) {
-        int j = rng.next() % (i + 1);
+        int j = generator() % (i + 1);
         swap(possibleMoves[i], possibleMoves[j]);  // 交換 i 和 j
     }
 
@@ -127,10 +124,10 @@ inline int playout(Node* node) {  // 在該 node 的回合開始遊戲，回傳�
             boardO |= (1 << move);
         }
 
-        if (i <= 4 && checkWin(boardX, boardO, currentTurn)) {
-            return (currentTurn == startTurn) ? 1 : -1;
+        if (i <= CHECKWIN_THRESHOLD && checkWin(boardX, boardO, currentTurn)) {
+            return (currentTurn == startTurn) ? static_cast<int>(BoardState::WIN) : static_cast<int>(BoardState::LOSE);
         }
     }
 
-    return 0;  // 平手
+    return static_cast<int>(BoardState::DRAW);  // 平手
 }

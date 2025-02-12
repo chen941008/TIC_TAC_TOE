@@ -1,6 +1,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <thread>
 
 #include "Game.hpp"
 #include "MCTS.hpp"
@@ -18,9 +19,10 @@ int main() {
         startGame();
     }
     */
-    int gameTimes = 30, totalTime = 0;
+    int gameTimes = 30;
+    long long totalTime = 0;
     // 創建一個 CSV 檔案來保存結果
-    ofstream outputFile("inline_2.csv");
+    ofstream outputFile("parallelPlayout.csv");
     if (!outputFile.is_open()) {
         cerr << "Error: Unable to open output file!" << endl;
         return 1;
