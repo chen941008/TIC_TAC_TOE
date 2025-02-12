@@ -23,9 +23,7 @@ int simulationTimes;              // 實際定義變量
 random_device rd;                 // 取得硬體隨機數
 mt19937 generator(rd());          // 初始化隨機數生成器
 
-int MCTS(Node* root, int iterations) {
-    auto start = std::chrono::high_resolution_clock::now();
-    // 記錄開始時間
+void MCTS(Node* root, int iterations) {
     for (int i = 0; i < iterations; i++) {
         Node* selectedNode = selection(root);  // 選擇best leaf node
         if (selectedNode->state == BoardState::WIN) {
@@ -44,9 +42,6 @@ int MCTS(Node* root, int iterations) {
         backpropagation(selectedNode, root->parent, selectedNode->isXTurn,
                         playoutResult);  // 傳遞結果並更新節點資訊
     }
-    auto end = std::chrono::high_resolution_clock::now();  // 記錄結束時間
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-    return duration.count();
 }
 
 inline Node* selection(Node* node) {  // select the best leaf node
