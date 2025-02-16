@@ -13,7 +13,10 @@ void startGame() {
     Node* root = new Node();
     generateFullTree(root);
     Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
-    int playerOrder, currentOrder = 0, aiMode, iterationTimes;
+    int playerOrder, currentOrder = 0, aiMode, iterationTimes, simulationTimes;
+    cout << "Input stimulation times." << endl;
+    cin >> simulationTimes;
+    MCTS ai(simulationTimes);
     cout << "Choose AI simulation mode: 1 = fixed simulation times, 2 = "
             "variable simulation times"
          << endl;
@@ -105,7 +108,7 @@ void startGame() {
             }
             uint16_t prevBoardX = boardX;
             uint16_t prevBoardO = boardO;
-            MCTS(currentNode, iterationTimes);
+            ai.run(currentNode, iterationTimes);
             Node* bestChild = nullptr;
             int mostVisit = 0;
             for (int i = 0; i < MAX_CHILDREN && currentNode->children[i] != nullptr; ++i) {

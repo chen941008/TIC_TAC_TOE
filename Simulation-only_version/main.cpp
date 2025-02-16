@@ -9,11 +9,10 @@
 
 using namespace std;
 int main() {
+    cout << "Welcome to Tic-Tac-Toe" << endl;
     int gameTimes;
     cout << "Input how many game you want to play." << endl;
     cin >> gameTimes;
-    cout << "Input stimulation times." << endl;
-    cin >> simulationTimes;
     for (int i = 0; i < gameTimes; i++) {
         startGame();
     }

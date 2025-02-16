@@ -18,14 +18,12 @@
 #include "Node.hpp"
 
 using namespace std;
-const double COEFFICIENT = 1.41;  // UCB1算法的參數
-int simulationTimes;              // 實際定義變量
-random_device rd;                 // 取得硬體隨機數
-mt19937 generator(rd());          // 初始化隨機數生成器
 
-void MCTS(Node* root, int iterations) {
+MCTS::MCTS(int simTimes) : simulationTimes(simTimes), generator(std::random_device{}()) {}
+
+void MCTS::run(Node* root, int iterations) {
     for (int i = 0; i < iterations; i++) {
-        Node* selectedNode = selection(root);  // 選擇best leaf node
+        Node* selectedNode = selection(root);
         if (selectedNode->state == BoardState::WIN) {
             backpropagation(selectedNode, root->parent, selectedNode->isXTurn, static_cast<double>(BoardState::WIN));
             continue;
@@ -39,20 +37,18 @@ void MCTS(Node* root, int iterations) {
             playoutResult += playout(selectedNode);
         }
         playoutResult /= simulationTimes;
-        backpropagation(selectedNode, root->parent, selectedNode->isXTurn,
-                        playoutResult);  // 傳遞結果並更新節點資訊
+        backpropagation(selectedNode, root->parent, selectedNode->isXTurn, playoutResult);
     }
 }
 
-inline Node* selection(Node* node) {  // select the best leaf node
+Node* MCTS::selection(Node* node) {
     while (true) {
-        Node* bestChild = nullptr;                                     // 一直選到leaf node
-        if (node->children[0] == nullptr) {                            // 當前節點沒有子節點時，該節點為leaf node
-            return node;                                               // node，返回該節點
-        } else {                                                       // 如果當前節點有子節點
-            bestChild = nullptr;                                       // 紀錄最佳子節點
-            double bestValue = std::numeric_limits<double>::lowest();  // 紀錄最佳 UCB 值
-            double logParent = log(node->visits);                      // 避免每次都重算 log(node->visits)
+        if (node->children[0] == nullptr) {
+            return node;
+        } else {
+            Node* bestChild = nullptr;
+            double bestValue = std::numeric_limits<double>::lowest();
+            double logParent = log(node->visits);
             for (int i = 0; i < MAX_CHILDREN && node->children[i] != nullptr; i++) {
                 Node* child = node->children[i];
                 if (child->visits == 0) {
@@ -64,13 +60,12 @@ inline Node* selection(Node* node) {  // select the best leaf node
                     bestChild = child;
                 }
             }
+            node = bestChild;
         }
-        node = bestChild;  // 選擇最佳子節點
     }
 }
 
-inline void backpropagation(Node* node, Node* endNode, bool isXTurn,
-                            double win) {  // leaf node; leaf node's turn; win, lose, or draw
+void MCTS::backpropagation(Node* node, Node* endNode, bool isXTurn, double win) {
     while (node != endNode) {
         node->visits++;
         if (isXTurn == node->isXTurn) {
@@ -82,35 +77,30 @@ inline void backpropagation(Node* node, Node* endNode, bool isXTurn,
     }
 }
 
-inline int playout(Node* node) {
+int MCTS::playout(Node* node) {
     uint16_t boardX = node->boardX;
     uint16_t boardO = node->boardO;
     bool startTurn = node->isXTurn;
     bool currentTurn = startTurn;
 
-    // 建立可能的走步
-    uint16_t usedPositions = boardX | boardO;                // 紀錄已使用的位置
-    uint16_t availableMoves = ~usedPositions & 0b111111111;  // 取得可用位置
+    uint16_t usedPositions = boardX | boardO;
+    uint16_t availableMoves = ~usedPositions & 0b111111111;
 
     int possibleMoves[MAX_CHILDREN];
     int count = 0;
-
-    // 取得所有可用位置
     for (int i = 0; i < MAX_CHILDREN; i++) {
         if (availableMoves & (1 << i)) {
             possibleMoves[count++] = i;
         }
     }
 
-    // 事先隨機打亂 possibleMoves 陣列
     for (int i = count - 1; i > 0; --i) {
         int j = generator() % (i + 1);
-        swap(possibleMoves[i], possibleMoves[j]);  // 交換 i 和 j
+        std::swap(possibleMoves[i], possibleMoves[j]);
     }
 
-    // 依序模擬遊戲進行
     for (int i = count - 1; i >= 0; i--) {
-        currentTurn = !currentTurn;  // 換手
+        currentTurn = !currentTurn;
         int move = possibleMoves[i];
 
         if (currentTurn) {
@@ -123,6 +113,5 @@ inline int playout(Node* node) {
             return (currentTurn == startTurn) ? static_cast<int>(BoardState::WIN) : static_cast<int>(BoardState::LOSE);
         }
     }
-
-    return static_cast<int>(BoardState::DRAW);  // 平手
+    return static_cast<int>(BoardState::DRAW);
 }
