@@ -15,7 +15,7 @@ int main() {
     cout << "Input how many game you want to play." << endl;
     cin >> gameTimes;
     for (int i = 0; i < gameTimes; i++) {
-        startGame();
+        Game::startGame();
     }
     */
     int gameTimes = 30;
@@ -32,7 +32,7 @@ int main() {
         totalTime = 0;
         for (int i = 0; i < gameTimes; i++) {
             Node* root = new Node();             // 創建根節點
-            generateFullTree(root);              // 生成完整遊戲樹
+            Game::generateFullTree(root);        // 生成完整遊戲樹
             MCTS ai(simulationTimes);            // 創建 MCTS AI
             totalTime += ai.run(root, 1000000);  // 執行 MCTS
             deleteTree(root);                    // 刪除樹

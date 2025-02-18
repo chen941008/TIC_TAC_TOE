@@ -8,8 +8,7 @@
 #include "Node.hpp"
 
 using namespace std;
-
-void startGame() {
+void Game::startGame() {
     Node* root = new Node();
     generateFullTree(root);
     Node* currentNode = root;  // CurrentNode為當前棋盤最後一個子的節點，會去選擇他的子節點來下棋
@@ -154,7 +153,7 @@ void startGame() {
     delete root;
 }
 
-void printBoard(uint16_t boardX, uint16_t boardO) {
+void Game::printBoard(uint16_t boardX, uint16_t boardO) {
     cout << endl;
     for (int i = 0; i < BOARD_SIZE; i++) {
         int temp = i * BOARD_SIZE;
@@ -176,7 +175,7 @@ void printBoard(uint16_t boardX, uint16_t boardO) {
 }
 
 // 遞迴生成完整遊戲樹的函式
-void generateFullTree(Node* node) {
+void Game::generateFullTree(Node* node) {
     // 取得當前棋盤已使用的位置
     uint16_t usedPositions = node->boardX | node->boardO;
 
@@ -202,4 +201,13 @@ void generateFullTree(Node* node) {
     for (int i = 0; i < childIndex; i++) {
         generateFullTree(node->children[i]);
     }
+}
+bool Game::checkWin(uint16_t boardX, uint16_t boardO, bool playTurn) noexcept {
+    uint16_t playerBoard = playTurn ? boardX : boardO;
+    for (int i = 0; i < 8; i++) {
+        if ((playerBoard & WIN_PATTERNS[i]) == WIN_PATTERNS[i]) {
+            return true;
+        }
+    }
+    return false;
 }

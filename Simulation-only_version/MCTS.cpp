@@ -113,7 +113,7 @@ int MCTS::playout(Node* node) {
             boardO |= (1 << move);
         }
 
-        if (i <= CHECKWIN_THRESHOLD && checkWin(boardX, boardO, currentTurn)) {
+        if (i <= CHECKWIN_THRESHOLD && Game::checkWin(boardX, boardO, currentTurn)) {
             return (currentTurn == startTurn) ? static_cast<int>(BoardState::WIN) : static_cast<int>(BoardState::LOSE);
         }
     }
