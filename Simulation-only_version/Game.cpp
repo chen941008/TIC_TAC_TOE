@@ -6,6 +6,7 @@
 
 #include "MCTS.hpp"
 #include "Node.hpp"
+#include "ThreadPool.hpp"
 
 using namespace std;
 void Game::startGame() {
@@ -15,7 +16,7 @@ void Game::startGame() {
     int playerOrder, currentOrder = 0, aiMode, iterationTimes, simulationTimes;
     cout << "Input stimulation times." << endl;
     cin >> simulationTimes;
-    MCTS ai(simulationTimes);
+    MCTS ai(simulationTimes, 1);
     cout << "Choose AI simulation mode: 1 = fixed simulation times, 2 = "
             "variable simulation times"
          << endl;
